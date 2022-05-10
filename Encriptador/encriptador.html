@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Encriptador De Texto</title>
+		<link rel="stylesheet" href="style.css">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+	</head>
+	<body>
+		<header>
+			<img class="logo" src="imagenes/logo.png" autofocus>
+		</header>
+		<main>
+			<section>
+				<textarea type="text" class="texto" placeholder = "Ingrese el texto aqui" cols="40" rows="6" >
+
+				</textarea>
+				<h6>Solo letras minúsculas y sin acentos</h6>
+				<div class="botones">
+					<button class="button" id="encriptar" onclick="btnencriptar()">Encriptar</button>
+					<button class="button" id="desencriptar" onclick="btndesencriptar()">Desencriptar</button>
+				</div>		
+			</section>
+			<section class="segundaSeccion">
+				<div class="cuadroDeTexto">
+				<img class="imagen" src="imagenes/Muñeco.png">
+				<textarea type="text" class="text-area"  cols="18" rows="5" placeholder="Aqui aparecera el texto encriptado"></textarea>
+				</div>
+				<button class="copy" id="copiar">Copiar</button> 
+				<span id="mensaje"></span>
+			</section>
+		</main>
+		<footer>
+			<p class="rodapie">© Copyright 2022 - Desarrolado por Eduardo Gaston Freire</p>
+		</footer>
+	</body>
+	<script src="script.js"></script>
+</html>

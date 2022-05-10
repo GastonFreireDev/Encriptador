@@ -1,0 +1,116 @@
+*{
+	background: black;
+	margin: 0;
+	padding: 0;
+	font-family: "inter" sans-serif;
+	font-weight: 400;
+	font-size: 32px;
+	line-height: 150%;
+}
+.logo{
+	width: 6%;
+	margin: 10px;
+}
+main{
+	display: flex;
+	flex-direction: row;
+}
+::placeholder{
+	color: white;
+	
+}
+.texto{
+	color: white;
+	margin-top: 90px;
+	margin-left: 60px;
+	border:none;
+	text-align: center;
+	
+}
+.texto:focus{
+	outline: none
+}
+h6{
+	color:white;
+	margin-left: 280px;
+	font-size: 15px;
+}
+.botones{
+	margin-left: 100px;
+	
+}
+.button{
+	width: 280px;
+	margin: 20px;
+	background: darkgoldenrod;
+	padding: 10px 40px;
+	border-radius: 15px;
+	font-weight: bold;
+	transition: 2s;
+	cursor: pointer;
+
+}
+.button:hover, .copy:hover{
+	background: darkorange;
+	transform: scale(1.1);
+}
+
+.segundaSeccion{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-left: 400px;
+
+
+}
+.cuadroDeTexto{
+	width:400px ;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	border: 8px solid darkgoldenrod;
+	border-radius: 15px;
+}
+.imagen{
+	border: 5px solid darkgoldenrod;
+	width: 150px;
+	margin: 30px;
+	background: #E5E5E5;
+}
+.text-area{
+	color:white;
+	position: relative;
+	border: none;
+	text-align: center;
+	
+
+}
+
+
+.text-area:focus{
+	outline: none;
+}
+
+.text-area::selection{
+	background-color: transparent;
+}
+.copy{
+	
+	margin-top: 20px;
+	background: darkgoldenrod;
+	font-weight: bold;
+	width: 180px;
+	padding: 10px 20px;
+	border-radius: 15px;
+	transition: 2s;
+	cursor: pointer;
+
+	
+}
+
+.rodapie{
+	color:white;
+	text-align: center;
+	margin-top: 60px;
+	font-size: 20px;
+}
