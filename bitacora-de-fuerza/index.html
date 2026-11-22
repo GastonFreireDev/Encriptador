@@ -221,6 +221,7 @@ const PLAN=[
 const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 
 /* ---------- Estado ---------- */
+const BUILD='dev';
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
 S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}},dl:{on:false,start:null,cycle:null,snooze:null,base:{},back:{}}},S);
@@ -629,7 +630,8 @@ function renderMas(){
   <div class="panel"><h3 style="margin-bottom:8px">Respaldo de tus datos</h3>
     <div class="note" style="margin-bottom:10px">Tus registros viven solo en este teléfono y navegador. Copia el respaldo de vez en cuando; para pasarlo a otro dispositivo pégalo abajo y restaura.</div>
     <textarea id="bk" rows="4" placeholder="Pega aquí un respaldo para restaurar" aria-label="Respaldo"></textarea>
-    <div class="row2" style="grid-template-columns:1fr 1fr"><button class="btn sm ghost" id="bkCopy">Copiar respaldo</button><button class="btn sm" id="bkRestore">Restaurar</button></div></div>`;
+    <div class="row2" style="grid-template-columns:1fr 1fr"><button class="btn sm ghost" id="bkCopy">Copiar respaldo</button><button class="btn sm" id="bkRestore">Restaurar</button></div></div>
+  <div class="note" style="text-align:center;margin-top:16px">Versión ${BUILD}</div>`;
 }
 
 /* ---------- Navegación y eventos ---------- */

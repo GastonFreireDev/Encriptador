@@ -239,6 +239,7 @@ const PLAN=[
 const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 
 /* ---------- Estado ---------- */
+const BUILD='2026-11-22 13:00 UTC';
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
 S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}},dl:{on:false,start:null,cycle:null,snooze:null,base:{},back:{}}},S);
@@ -647,7 +648,8 @@ function renderMas(){
   <div class="panel"><h3 style="margin-bottom:8px">Respaldo de tus datos</h3>
     <div class="note" style="margin-bottom:10px">Tus registros viven solo en este teléfono y navegador. Copia el respaldo de vez en cuando; para pasarlo a otro dispositivo pégalo abajo y restaura.</div>
     <textarea id="bk" rows="4" placeholder="Pega aquí un respaldo para restaurar" aria-label="Respaldo"></textarea>
-    <div class="row2" style="grid-template-columns:1fr 1fr"><button class="btn sm ghost" id="bkCopy">Copiar respaldo</button><button class="btn sm" id="bkRestore">Restaurar</button></div></div>`;
+    <div class="row2" style="grid-template-columns:1fr 1fr"><button class="btn sm ghost" id="bkCopy">Copiar respaldo</button><button class="btn sm" id="bkRestore">Restaurar</button></div></div>
+  <div class="note" style="text-align:center;margin-top:16px">Versión ${BUILD}</div>`;
 }
 
 /* ---------- Navegación y eventos ---------- */
@@ -707,6 +709,6 @@ else if(S.dl.on&&dayDiff(S.dl.start,today())>=DL_LEN)setTimeout(()=>toast('Termi
 show('hoy');
 </script>
 
-<script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
+<script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){var had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',function(){if(had&&!window.__rl){window.__rl=1;location.reload()}});window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){r.update()}).catch(function(){})})}</script>
 </body>
 </html>

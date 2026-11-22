@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Genera docs/index.html (versión instalable en iPhone) a partir de bitacora-de-fuerza/index.html.
 Uso: python3 bitacora-de-fuerza/build.py"""
-import pathlib
+import pathlib, datetime
 root = pathlib.Path(__file__).resolve().parent.parent
 src = (root / 'bitacora-de-fuerza' / 'index.html').read_text()
 head = '''<!doctype html>
@@ -24,9 +24,11 @@ head = '''<!doctype html>
 <body>
 '''
 tail = '''
-<script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
+<script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){var had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',function(){if(had&&!window.__rl){window.__rl=1;location.reload()}});window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){r.update()}).catch(function(){})})}</script>
 </body>
 </html>
 '''
+stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+src = src.replace("const BUILD='dev';", "const BUILD='"+stamp+"';")
 (root / 'docs' / 'index.html').write_text(head + src + tail)
 print('docs/index.html generado')
