@@ -260,9 +260,12 @@ function toast(m,ms=3200){const t=$('#toast');t.textContent=m;t.hidden=false;cle
 
 /* ---------- Sonido ---------- */
 let AC;
-function beep(f=880,d=.15){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();
-  const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;o.type='sine';g.gain.value=.25;o.connect(g);g.connect(AC.destination);
-  g.gain.setValueAtTime(.25,AC.currentTime+d-.03);g.gain.linearRampToValueAtTime(0,AC.currentTime+d);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+function tone(f,at,d,vol,type){const t=AC.currentTime+at,o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.02)}
+function ctx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}
+function beep(f=880,d=.15,vol=.25,type='sine'){try{ctx();tone(f,0,d,vol,type)}catch(e){}}
+function victory(){try{ctx();[[523,0,.14],[659,.14,.14],[784,.28,.14],[1047,.42,.5]].forEach(a=>tone(a[0],a[1],a[2],.6,'triangle'));tone(1047,.42,.5,.25,'square');tone(1319,.95,.8,.6,'triangle');tone(1568,.95,.8,.3,'triangle')}catch(e){}}
 const vibe=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 
 /* ---------- Historial ---------- */
@@ -461,11 +464,11 @@ function tbTick(){
   let guard=0;
   while(TB.run&&TB.end-Date.now()<=0&&guard++<200){
     TB.i++;const p=TB.ph[TB.i];
-    if(p.t==='done'){tbStop(true);beep(1000,.5);vibe([300,100,300,100,500]);TB.left=0;break}
+    if(p.t==='done'){tbStop(true);victory();vibe([300,100,300,100,500]);TB.left=0;break}
     TB.end+=p.d*1000;TB.sec=-1;
-    if(p.t==='work'){beep(1000,.35);vibe(250)}else{beep(520,.3);vibe([120,60,120])}
+    if(p.t==='work'){beep(1175,.7,.8,'square');vibe(300)}else{beep(440,.3,.3);vibe([120,60,120])}
   }
-  if(TB.run){const s=Math.ceil((TB.end-Date.now())/1000);if(s<=3&&s>=1&&s!==TB.sec){TB.sec=s;beep(740,.08)}}
+  if(TB.run){const s=Math.ceil((TB.end-Date.now())/1000);if(s<=3&&s>=1&&s!==TB.sec){TB.sec=s;beep(880,.16,.5)}}
   tbUpdate();
 }
 function tbStop(done){
