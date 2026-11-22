@@ -76,6 +76,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .aw{display:flex;align-items:center;gap:10px;margin-top:10px}
 .aw .f{width:130px;flex:none}
 .row2+.panel{margin-top:16px}
+#holdbox{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(70px + env(safe-area-inset-bottom,0px));max-width:528px;margin:0 auto;border-radius:20px;padding:14px 16px;text-align:center;z-index:35;color:var(--on-dc);box-shadow:0 8px 28px #0006;display:flex;flex-direction:column;align-items:center}
+#holdbox.prep{background:var(--rest)}
+#holdbox.work{background:var(--ok)}
+#hn{font-family:var(--f-display);font-weight:700;font-size:1.25rem;letter-spacing:.05em;text-transform:uppercase}
+#ht{font-family:var(--f-display);font-weight:700;font-size:6rem;line-height:1;font-variant-numeric:tabular-nums}
+#hx{margin-top:6px;border:0;background:color-mix(in srgb,currentColor 22%,transparent);color:inherit;border-radius:10px;min-height:44px;padding:0 22px;font-weight:600}
 .hint{font-size:.8rem;color:var(--muted);margin:2px 0 10px;overflow-wrap:anywhere}
 .up{display:inline-block;background:var(--dc);color:var(--on-dc);border-radius:999px;font-size:.72rem;font-weight:600;padding:2px 9px;margin-right:6px}
 .set{display:grid;grid-template-columns:1.4rem 1fr 1fr 46px;gap:8px;align-items:center;margin-top:6px}
@@ -167,6 +173,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stro
 <main id="app"></main>
 <div id="restchip" hidden><span>Descanso</span><b id="rtime">0:00</b><button id="r15" aria-label="Sumar 15 segundos">+15</button><button id="rx" aria-label="Cerrar descanso"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <div id="toast" hidden></div>
+<div id="holdbox" hidden><div id="hn"></div><div id="ht"></div><button id="hx">Cancelar</button></div>
 <nav id="nav" role="tablist">
   <button role="tab" data-tab="hoy"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>Hoy</button>
   <button role="tab" data-tab="prog"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-5 4 3 6-8"/></svg>Progreso</button>
@@ -431,94 +438,105 @@ function tbGo(){
 function tbReset(){tbStop();TB.ph=[];TB.i=0;TB.left=0;renderTabata()}
 
 /* ---------- ABDOMEN (en casa) ---------- */
-const ABS=[
- [{name:'A',ex:[
-   {n:'Crunch',r:'15',c:'Hombros arriba, mirada al techo, sin jalar el cuello.'},
-   {n:'Plancha',r:'30 s',c:'Cuerpo recto, abdomen y glúteos apretados.'},
-   {n:'Elevación de rodillas tumbado',r:'12',c:'Sube las rodillas al pecho sin despegar la zona lumbar.'},
-   {n:'Bicho muerto',r:'10 por lado',c:'Lumbar pegada al piso; mueve brazo y pierna contrarios.'}]},
-  {name:'B',ex:[
-   {n:'Bicicleta',r:'20',c:'Lento; codo hacia la rodilla contraria.'},
-   {n:'Plancha lateral',r:'20 s por lado',c:'Cadera arriba, cuerpo en línea.'},
-   {n:'Crunch inverso',r:'12',c:'Sube la cadera con el abdomen, sin impulso.'},
-   {n:'Superman',r:'12',c:'Levanta brazos y piernas, pausa de 1 s arriba.'}]}],
- [{name:'A',ex:[
-   {n:'Crunch con pausa',r:'15',c:'Mantén 2 s arriba apretando el abdomen.'},
-   {n:'Plancha',r:'45 s',c:'Cuerpo recto, abdomen y glúteos apretados.'},
-   {n:'Elevación de piernas tumbado',r:'12',c:'Piernas casi rectas; baja sin tocar el piso.'},
-   {n:'Escaladores',r:'30 s',c:'Rodillas al pecho rápido, cadera baja.'}]},
-  {name:'B',ex:[
-   {n:'Bicicleta lenta',r:'24',c:'Pausa de 1 s en cada lado.'},
-   {n:'Plancha lateral',r:'30 s por lado',c:'Cadera arriba, cuerpo en línea.'},
-   {n:'Tijeras',r:'30 s',c:'Piernas rectas cruzándose, lumbar pegada.'},
-   {n:'Bicho muerto con pausa',r:'12 por lado',c:'Pausa de 2 s con brazo y pierna extendidos.'}]}],
- [{name:'A',ex:[
-   {n:'Crunch con disco al pecho',r:'15',w:1,c:'Disco abrazado al pecho con ambas manos.'},
-   {n:'Plancha con toque de hombro',r:'20 toques',c:'Sin balancear la cadera.'},
-   {n:'Elevación de piernas',r:'15',c:'Baja en 3 segundos.'},
-   {n:'Giro ruso',r:'20',c:'Gira el torso, no solo los brazos.'}]},
-  {name:'B',ex:[
-   {n:'Giro ruso con disco',r:'20',w:1,c:'Disco con ambas manos; pies arriba si puedes.'},
-   {n:'Plancha lateral con pierna arriba',r:'12 por lado',c:'Sube la pierna de arriba sin bajar la cadera.'},
-   {n:'Crunch inverso con pausa',r:'15',c:'Pausa de 2 s arriba, sin impulso.'},
-   {n:'Hollow hold',r:'25 s',c:'Lumbar pegada; brazos y piernas extendidos.'}]}],
- [{name:'A',ex:[
-   {n:'Crunch con disco sobre la cabeza',r:'12',w:1,c:'Brazos estirados atrás; sube controlado.'},
-   {n:'Hollow hold',r:'35 s',c:'Lumbar pegada; brazos y piernas extendidos.'},
-   {n:'Elevación de piernas con pausa',r:'15',c:'Pausa de 2 s con las piernas a 45°.'},
-   {n:'Giro ruso con disco',r:'24',w:1,c:'Disco con ambas manos; pies arriba si puedes.'}]},
-  {name:'B',ex:[
-   {n:'Sit-up con disco al pecho',r:'12',w:1,c:'Sube completo y baja en 3 segundos.'},
-   {n:'Arrastre de disco en plancha',r:'10 por lado',w:1,c:'Desde plancha, pasa el disco por el piso de un lado a otro.'},
-   {n:'Escaladores lentos',r:'40 s',c:'Rodillas al pecho con control, cadera baja.'},
-   {n:'Leñador con disco',r:'12 por lado',w:1,c:'Diagonal de cadera a hombro, gira los pies.'}]}]
+/* 100 niveles = 5 etapas de 20. Cada patrón tiene 2 variantes por etapa (A/B) y sube repeticiones o segundos nivel a nivel. */
+const o=(n,k,a,b,c,x={})=>({n,k,a,b,c,...x});
+const STN=['Base','Control','Con disco','Fuerza','Élite'];
+const ABSP=[
+ [[o('Crunch','r',10,20,'Hombros arriba, mirada al techo, sin jalar el cuello.'),o('Crunch con piernas elevadas','r',10,20,'Rodillas a 90°; sube el pecho hacia las rodillas.')],
+  [o('Crunch con pausa','r',10,20,'Mantén 2 s arriba apretando el abdomen.'),o('Sit-up','r',8,18,'Sube completo y baja controlado, sin impulso.')],
+  [o('Crunch con disco al pecho','r',10,20,'Disco abrazado al pecho con ambas manos.',{w:1}),o('Sit-up con disco al pecho','r',8,16,'Sube completo y baja en 3 segundos.',{w:1})],
+  [o('Crunch con disco sobre la cabeza','r',10,18,'Brazos estirados atrás; sube controlado.',{w:1}),o('Sit-up con disco sobre la cabeza','r',8,14,'Brazos estirados; baja en 3 segundos.',{w:1})],
+  [o('Crunch con disco y pausa de 3 s','r',8,15,'Pausa de 3 s arriba con el disco al pecho.',{w:1}),o('Sit-up con disco, bajada de 5 s','r',6,12,'Baja muy lento, sin dejarte caer.',{w:1})]],
+ [[o('Plancha de rodillas','t',20,40,'Cuerpo recto de rodillas a cabeza; abdomen apretado.'),o('Bicho muerto','r',8,16,'Lumbar pegada al piso; brazo y pierna contrarios.',{per:'por lado'})],
+  [o('Plancha','t',30,60,'Cuerpo recto, abdomen y glúteos apretados.'),o('Bicho muerto con pausa','r',8,14,'Pausa de 2 s con brazo y pierna extendidos.',{per:'por lado'})],
+  [o('Plancha con toque de hombro','r',10,20,'Sin balancear la cadera.',{per:'toques'}),o('Hollow hold','t',20,40,'Lumbar pegada; brazos y piernas extendidos.')],
+  [o('Plancha con elevación de pierna','r',8,14,'Sube la pierna sin girar la cadera.',{per:'por lado'}),o('Hollow hold con piernas bajas','t',25,45,'Baja las piernas sin despegar la lumbar.')],
+  [o('Arrastre de disco en plancha','r',8,14,'Desde plancha, pasa el disco por el piso de un lado a otro.',{w:1,per:'por lado'}),o('Hollow hold con disco','t',20,40,'Disco entre las manos, brazos estirados sobre la cabeza.',{w:1})]],
+ [[o('Elevación de rodillas tumbado','r',10,20,'Sube las rodillas al pecho sin despegar la lumbar.'),o('Crunch inverso','r',8,16,'Sube la cadera con el abdomen, sin impulso.')],
+  [o('Elevación de piernas','r',8,16,'Piernas casi rectas; baja sin tocar el piso.'),o('Tijeras','t',20,40,'Piernas rectas cruzándose, lumbar pegada.')],
+  [o('Elevación de piernas con pausa','r',8,16,'Pausa de 2 s con las piernas a 45°.'),o('Crunch inverso con pausa','r',10,18,'Pausa de 2 s arriba, sin impulso.')],
+  [o('Elevación de piernas con bajada lenta','r',8,14,'Baja en 4 segundos.'),o('Elevación de cadera con piernas rectas','r',8,14,'Piernas hacia el techo, sube solo la cadera.')],
+  [o('Elevación de piernas, pausa y bajada lenta','r',8,14,'Pausa de 2 s arriba y baja en 4 s.'),o('Elevación de cadera con pausa','r',8,14,'Pausa de 2 s arriba, sin balanceo.')]],
+ [[o('Bicicleta','r',16,30,'Lento; codo hacia la rodilla contraria (total de ambos lados).'),o('Plancha lateral de rodillas','t',15,30,'Cadera arriba, cuerpo en línea.',{per:'por lado'})],
+  [o('Bicicleta lenta','r',16,28,'Pausa de 1 s en cada lado.'),o('Plancha lateral','t',20,45,'Cadera arriba, cuerpo en línea.',{per:'por lado'})],
+  [o('Giro ruso','r',16,30,'Gira el torso, no solo los brazos.'),o('Plancha lateral con pierna arriba','r',8,14,'Sube la pierna de arriba sin bajar la cadera.',{per:'por lado'})],
+  [o('Giro ruso con disco','r',16,28,'Disco con ambas manos; pies arriba si puedes.',{w:1}),o('Leñador con disco','r',8,14,'Diagonal de cadera a hombro, gira los pies.',{w:1,per:'por lado'})],
+  [o('Giro ruso con disco, pies arriba','r',20,34,'Pies sin tocar el piso, giro controlado.',{w:1}),o('Leñador con disco, pesado','r',12,20,'Diagonal controlada, abdomen firme.',{w:1,per:'por lado'})]]
 ];
-function absState(){const A=S.abs,c=Math.max(0,A.log.length+A.adj),lv=Math.min(3,Math.floor(c/4));return{c,lv,r:ABS[lv][c%2]}}
-function absCount(r){let d=0,t=0;r.ex.forEach((e,i)=>{t+=3;((S.absD&&S.absD.sets[i])||[]).forEach(x=>{if(x)d++})});return{d,t}}
-function updAbs(){const c=absCount(absState().r);$('#adone').textContent=c.d;$('#afill').style.width=(c.t?c.d/c.t*100:0)+'%'}
-function absCard(e,i,D){
+const absLabel=e=>e.val+(e.k==='t'?' s':'')+(e.per?' '+e.per:'');
+function absPlan(c){
+  const lv=Math.min(99,c),st=Math.floor(lv/20),p=(lv%20)/19,v=c%2;
+  return{lv,st,v,sets:lv<60?3:4,ex:ABSP.map(P=>{const e=P[st][v],raw=e.a+(e.b-e.a)*p,val=e.k==='t'?Math.max(5,Math.round(raw/5)*5):Math.round(raw);
+    return{...e,val,wk:e.w?5+2.5*(st-2)+2.5*Math.min(2,Math.floor(p*3)):0}})};
+}
+function absState(){const A=S.abs,c=Math.max(0,Math.min(99+0,A.log.length+A.adj));return{c,...absPlan(c)}}
+function absCount(pl){let d=0;pl.ex.forEach((e,i)=>{((S.absD&&S.absD.sets[i])||[]).forEach(x=>{if(x)d++})});return{d,t:pl.ex.length*pl.sets}}
+function updAbs(){const c=absCount(absState());$('#adone').textContent=c.d;$('#afill').style.width=(c.t?c.d/c.t*100:0)+'%'}
+function absCard(e,i,D,sets){
   const done=D.sets[i]||[],lw=S.abs.lastW[e.n];
   return `<section class="ex" style="--dc:var(--pull)">
-    <div class="ex-top"><div class="idx">${i+1}</div><div class="tt"><h3>${e.n}</h3><div class="note">${e.c}</div></div><div class="target">3×${e.r}</div></div>
-    ${e.w?`<div class="aw"><label class="f"><input class="awi" data-i="${i}" inputmode="decimal" placeholder="${lw?fmt(lw):'kg'}" value="${D.w[i]||''}" aria-label="Peso del disco"><i>kg</i></label><span class="note">Peso del disco${lw?' · última vez '+fmt(lw)+' kg':''}</span></div>`:''}
-    <div class="sbs">${[0,1,2].map(j=>`<button class="sb${done[j]?' done':''}" data-i="${i}" data-j="${j}">Serie ${j+1}</button>`).join('')}</div></section>`;
+    <div class="ex-top"><div class="idx">${i+1}</div><div class="tt"><h3>${e.n}</h3><div class="note">${e.c}</div></div><div class="target">${sets}×${absLabel(e)}</div></div>
+    ${e.w?`<div class="aw"><label class="f"><input class="awi" data-i="${i}" inputmode="decimal" placeholder="${lw?fmt(lw):fmt(e.wk)}" value="${D.w[i]||''}" aria-label="Peso del disco"><i>kg</i></label><span class="note">Disco · sugerido ${fmt(e.wk)} kg${lw?' · última vez '+fmt(lw)+' kg':''}</span></div>`:''}
+    <div class="sbs" style="grid-template-columns:repeat(${sets},1fr)">${Array.from({length:sets},(_,j)=>`<button class="sb${done[j]?' done':''}" data-i="${i}" data-j="${j}">${e.k==='t'?'▶ ':''}Serie ${j+1}</button>`).join('')}</div>
+    ${e.k==='t'?'<div class="note" style="margin-top:6px">Toca ▶ para iniciar el cronómetro'+(e.per==='por lado'?' (cambia de lado cuando suene)':'')+'.</div>':''}</section>`;
 }
 function renderAbs(){
-  const {c,lv,r}=absState();
+  const st=absState(),{c,lv,sets}=st;
   if(!S.absD||S.absD.key!==c)S.absD={key:c,sets:{},w:{}};
-  const D=S.absD,left=4-(c%4),cn=absCount(r),h=S.abs.log.slice(-5).reverse();
-  app.innerHTML=`<div class="hero" style="--dc:var(--pull)"><span class="eyebrow">En casa · unos 10 minutos</span><h1>Nivel ${lv+1}</h1>
-    <div class="hero-sub">Rutina ${r.name} · ${r.ex.length} ejercicios, 3 rondas<br>${lv<3?'<b>'+left+(left>1?' sesiones':' sesión')+' para el Nivel '+(lv+2)+'</b>':'<b>Nivel máximo:</b> sube el peso del disco poco a poco'}</div>
+  const D=S.absD,cn=absCount(st),h=S.abs.log.slice(-5).reverse();
+  app.innerHTML=`<div class="hero" style="--dc:var(--pull)"><span class="eyebrow">En casa · unos 10 minutos</span><h1>Nivel ${lv+1}<span style="font-size:1.4rem;opacity:.7"> / 100</span></h1>
+    <div class="hero-sub">Rutina ${st.v?'B':'A'} · ${st.ex.length} ejercicios, ${sets} rondas<br><b>Etapa ${st.st+1} de 5 · ${STN[st.st]}</b>${lv<99?' · faltan '+(99-lv)+' niveles':' · nivel máximo'}</div>
     <div class="hero-p"><span class="c"><span id="adone">${cn.d}</span> / ${cn.t} series</span><div class="pbar"><i id="afill" style="width:${cn.t?cn.d/cn.t*100:0}%"></i></div></div></div>
-  ${r.ex.map((e,i)=>absCard(e,i,D)).join('')}
+  ${st.ex.map((e,i)=>absCard(e,i,D,sets)).join('')}
   <button class="btn" id="absFinish">Terminar rutina</button>
-  <div class="row2" style="grid-template-columns:1fr 1fr"><button class="btn sm ghost" id="absDn">Más fácil</button><button class="btn sm ghost" id="absUp">Más difícil</button></div>
-  <div class="panel"><h3 style="margin-bottom:6px">Cómo usarla</h3>
-    <div class="tip"><b>Cada vez cambia sola</b><span>Alterna Rutina A y B, y cada 4 sesiones sube un nivel. Si te queda fácil o difícil, usa los botones de arriba.</span></div>
+  <div class="row2" style="grid-template-columns:1fr 1fr"><button class="btn sm ghost" id="absDn">Bajar 5 niveles</button><button class="btn sm ghost" id="absUp">Subir 5 niveles</button></div>
+  <div class="row2" style="grid-template-columns:1fr auto"><label class="f"><input id="lvIn" inputmode="numeric" placeholder="Ir al nivel (1 a 100)" style="padding-right:10px" aria-label="Ir al nivel"></label><button class="btn sm" id="lvGo" style="width:auto;padding-inline:20px">Ir</button></div>
+  <div class="panel"><h3 style="margin-bottom:6px">Cómo funciona</h3>
+    <div class="tip"><b>Un nivel por sesión</b><span>Cada rutina que terminas sube un nivel, hasta el 100. Alterna A y B, y cada nivel suma repeticiones o segundos. Cada 20 niveles cambias de etapa con ejercicios más difíciles.</span></div>
     <div class="tip"><b>Cuándo hacerla</b><span>2 o 3 veces por semana, al final de Empuje o Tirón, o en tu día de descanso. No antes de piernas pesadas.</span></div>
-    <div class="tip"><b>Con discos (desde el Nivel 3)</b><span>Empieza con 5 kg (10 lb) y sostén el disco con ambas manos. Sube 2,5 kg cuando hagas las 3 series con buena técnica. Evita jalar el cuello.</span></div>
-    <div class="tip"><b>Descanso</b><span>45 s entre series; el cronómetro arranca al marcar una serie.</span></div></div>
+    <div class="tip"><b>Con discos (desde el nivel 41)</b><span>Sostén el disco con ambas manos. Empieza con lo sugerido y sube 2,5 kg cuando hagas todas las series con buena técnica. Evita jalar el cuello.</span></div>
+    <div class="tip"><b>Ejercicios con tiempo</b><span>Toca ▶: tienes 5 s para ponerte en posición y luego corre el cronómetro. Al terminar se marca la serie y empieza el descanso de 45 s.</span></div></div>
   ${h.length?`<div class="panel"><h3 style="margin-bottom:6px">Últimas sesiones</h3><table class="hist"><tbody>${h.map(x=>`<tr><td>${dm(x.date)}</td><td>Nivel ${x.lv} · Rutina ${x.r}</td><td>${x.sets} series</td></tr>`).join('')}</tbody></table></div>`:''}`;
 }
 function absSet(b){
-  const i=b.dataset.i,j=+b.dataset.j,a=S.absD.sets[i]=S.absD.sets[i]||[false,false,false];
+  const i=+b.dataset.i,j=+b.dataset.j,pl=absPlan(S.absD.key),e=pl.ex[i],a=S.absD.sets[i]=S.absD.sets[i]||Array(pl.sets).fill(false);
+  if(e.k==='t'&&!a[j]){holdStart(i,j);return}
   a[j]=!a[j];b.classList.toggle('done',a[j]);if(a[j]){startRest(45);beep(660,.08)}save();updAbs();
 }
+/* Cronómetro de ejercicios con tiempo */
+const HD={t:null,ph:[],i:0,end:0,sec:-1,key:0,idx:0,j:0,name:''};
+function holdPaint(){const p=HD.ph[HD.i],s=Math.max(0,Math.ceil((HD.end-Date.now())/1000));$('#hn').textContent=HD.name+' · '+p.n;$('#ht').textContent=s;$('#holdbox').className=p.k}
+function stopHold(){clearInterval(HD.t);HD.t=null;$('#holdbox').hidden=true}
+function holdStart(i,j){
+  const e=absPlan(S.absD.key).ex[i],side=e.per==='por lado',ph=[{n:'Prepárate',d:5,k:'prep'},{n:side?'Lado 1':'Aguanta',d:e.val,k:'work'}];
+  if(side)ph.push({n:'Lado 2',d:e.val,k:'work'});
+  stopRest();stopHold();Object.assign(HD,{ph,i:0,end:Date.now()+5000,sec:-1,key:S.absD.key,idx:i,j,name:e.n});
+  $('#holdbox').hidden=false;HD.t=setInterval(holdTick,100);beep(600,.08);holdPaint();
+}
+function holdTick(){
+  let ms=HD.end-Date.now();
+  while(ms<=0){HD.i++;if(HD.i>=HD.ph.length){holdDone();return}HD.end+=HD.ph[HD.i].d*1000;ms=HD.end-Date.now();beep(HD.ph[HD.i].k==='work'?1000:520,.35);vibe(250);HD.sec=-1}
+  const s=Math.ceil(ms/1000);if(s<=3&&s>=1&&s!==HD.sec){HD.sec=s;beep(740,.08)}
+  holdPaint();
+}
+function holdDone(){
+  stopHold();beep(1000,.5);vibe([300,100,300]);
+  if(S.absD&&S.absD.key===HD.key){
+    const n=absPlan(HD.key).sets,a=S.absD.sets[HD.idx]=S.absD.sets[HD.idx]||Array(n).fill(false);
+    a[HD.j]=true;save();if(tab==='abs')renderAbs();startRest(45);
+  }
+}
 function absFinish(){
-  const st=absState(),c=absCount(st.r);
+  const st=absState(),c=absCount(st);
   if(!c.d){toast('Marca al menos una serie');return}
   const w={};
-  st.r.ex.forEach((e,i)=>{if(e.w){const v=parseFloat(String(S.absD.w[i]||'').replace(',','.'));if(v>0){w[e.n]=v;S.abs.lastW[e.n]=v}}});
-  S.abs.log.push({date:today(),lv:st.lv+1,r:st.r.name,sets:c.d,w});S.absD=null;save();stopRest();
+  st.ex.forEach((e,i)=>{if(e.w){const v=parseFloat(String(S.absD.w[i]||'').replace(',','.'));if(v>0){w[e.n]=v;S.abs.lastW[e.n]=v}}});
+  S.abs.log.push({date:today(),lv:st.lv+1,r:st.v?'B':'A',sets:c.d,w});S.absD=null;save();stopRest();stopHold();
   const nx=absState();
-  toast(nx.lv>st.lv?'¡Subes al Nivel '+(nx.lv+1)+'!':'Guardado. Próxima: Nivel '+(nx.lv+1)+' · Rutina '+nx.r.name,5000);
+  toast(nx.st>st.st?'¡Nueva etapa: '+STN[nx.st]+'!':'Guardado. Próxima: Nivel '+(nx.lv+1)+' · Rutina '+(nx.v?'B':'A'),5000);
   renderAbs();window.scrollTo(0,0);
 }
-function absShift(dir){
-  const A=S.abs,c=Math.max(0,A.log.length+A.adj);
-  if(dir>0)A.adj+=4-(c%4);else A.adj-=(c%4)||4;
-  A.adj=Math.max(A.adj,-A.log.length);save();renderAbs();
-}
+function absGo(n){const A=S.abs;A.adj=Math.max(-A.log.length,Math.min(n,100)-1-A.log.length);save();renderAbs();window.scrollTo(0,0)}
 
 /* ---------- CONSEJOS ---------- */
 const TIPS=[
@@ -557,11 +575,13 @@ document.addEventListener('click',e=>{
   if(t.classList.contains('ck')){onCheck(t.closest('.set'));return}
   if(t.classList.contains('sb')){absSet(t);return}
   if(t.id==='absFinish'){absFinish();return}
-  if(t.id==='absUp'){absShift(1);return}
-  if(t.id==='absDn'){absShift(-1);return}
+  if(t.id==='absUp'){const st=absState();absGo(st.lv+1+5);return}
+  if(t.id==='absDn'){const st=absState();absGo(st.lv+1-5);return}
+  if(t.id==='lvGo'){const n=parseInt($('#lvIn').value);if(n>=1&&n<=100)absGo(n);else toast('Escribe un nivel de 1 a 100');return}
+  if(t.id==='hx'){stopHold();return}
   if(t.id==='finish'){finish();return}
   if(t.id==='r15'){rest.end+=15000;restTick();return}
-  if(t.id==='rx'){stopRest();return}
+  if(t.id==='rx'){stopRest();stopHold();return}
   if(t.dataset.k){const k=t.dataset.k;S.tabata[k]=Math.min(+t.dataset.mx,Math.max(+t.dataset.mn,S.tabata[k]+(+t.dataset.d)));TB.ph=[];TB.i=0;save();renderTabata();return}
   if(t.dataset.pre){const [w,r,n]=t.dataset.pre.split(',').map(Number);S.tabata={work:w,rest:r,rounds:n};TB.ph=[];TB.i=0;save();renderTabata();return}
   if(t.id==='tbGo'){tbGo();return}
