@@ -152,7 +152,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stro
 #restchip span{font-size:.75rem;opacity:.7}
 #restchip button{border:0;background:#ffffff26;color:inherit;border-radius:8px;min-width:46px;min-height:40px;font-weight:600}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(130px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);
-  padding:10px 16px;border-radius:999px;font-size:.88rem;font-weight:500;z-index:40;max-width:90vw;text-align:center}
+  padding:10px 16px;border-radius:16px;font-size:.88rem;font-weight:500;z-index:40;max-width:90vw;text-align:center}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (max-width:380px){.tb .big{font-size:4.4rem}.hero h1{font-size:2.8rem}}
 </style>
@@ -209,7 +209,7 @@ const dayDiff=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00')
 const dm=s=>s.slice(8,10)+'/'+s.slice(5,7);
 const mmss=s=>Math.floor(s/60)+':'+pad(s%60);
 let toastT;
-function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+function toast(m,ms=3200){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,ms)}
 
 /* ---------- Sonido ---------- */
 let AC;
@@ -243,24 +243,24 @@ const CHECK='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke=
 function renderHoy(){
   const sg=suggest();
   if(!curDay)curDay=PLAN[sg.i].id;
-  const day=PLAN.find(p=>p.id===curDay),dr=getDraft(day),c=counts(day,dr);
+  const day=PLAN.find(p=>p.id===curDay),dr=getDraft(day),c=counts(day,dr),rd=day.ex.filter(e=>nextKg(e)).length;
   const dt=new Date().toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
   app.innerHTML=`
-  <div class="hero" style="--dc:${day.color}"><span class="eyebrow">${dt}</span><h1>${day.name}</h1><div class="hero-sub">${sg.msg}</div>
+  <div class="hero" style="--dc:${day.color}"><span class="eyebrow">${dt}</span><h1>${day.name}</h1><div class="hero-sub">${sg.msg}${rd?`<br><b>${rd} ejercicio${rd>1?'s':''} listo${rd>1?'s':''} para subir de peso</b>`:''}</div>
     <div class="hero-p"><span class="c"><span id="pdone">${c.d}</span> / ${c.t} series</span><div class="pbar"><i id="pfill" style="width:${c.t?c.d/c.t*100:0}%"></i></div></div></div>
   <div class="chips">${PLAN.map((p,i)=>`<button class="chip" data-day="${p.id}" style="--dc:${p.color}" aria-pressed="${p.id===curDay}">${p.name}<small>${i===sg.i&&!sg.rest?'Hoy':''}</small></button>`).join('')}</div>
   ${day.ex.map((e,k)=>exCard(day,e,dr,k)).join('')}
   <button class="btn" id="finish">Terminar entrenamiento</button>`;
 }
+function nextKg(e){const p=lastFor(e.id);if(!p||p.sets.length<e.sets||!p.sets.every(s=>s.reps>=e.reps))return null;const top=Math.max(...p.sets.map(s=>s.kg));return top>0?top+e.inc:null}
 function counts(day,dr){let d=0,t=0;day.ex.forEach(e=>{t+=e.sets;dr.logs[e.id].forEach(s=>{if(s.done)d++})});return{d,t}}
 function updHero(day){const c=counts(day,getDraft(day));$('#pdone').textContent=c.d;$('#pfill').style.width=(c.t?c.d/c.t*100:0)+'%'}
 function exCard(day,e,dr,k){
   const prev=lastFor(e.id),sets=dr.logs[e.id];
   let hint='Primera vez: anota el peso que uses.';
   if(prev){
-    const ok=prev.sets.length>=e.sets&&prev.sets.every(s=>s.reps>=e.reps);
-    const top=Math.max(...prev.sets.map(s=>s.kg));
-    hint=(ok?`<span class="up">Sube a ${fmt(top+e.inc)} kg</span>`:'')+'Última: '+prev.sets.map(s=>fmt(s.kg)+'×'+s.reps).join(' · ');
+    const nk=nextKg(e);
+    hint=(nk?`<span class="up">Sube a ${fmt(nk)} kg</span>`:'')+'Última: '+prev.sets.map(s=>fmt(s.kg)+'×'+s.reps).join(' · ');
   }
   return `<section class="ex" style="--dc:${day.color}">
     <div class="ex-top"><div class="idx">${k+1}</div><div class="tt"><h3>${e.n}</h3>${e.note?`<div class="note">${e.note}</div>`:''}</div><div class="target">${e.sets}×${e.reps}</div></div>
@@ -294,8 +294,9 @@ function finish(){
   });
   if(!n){toast('Marca al menos una serie con ✓');return}
   S.sessions.push({date:today(),day:day.id,logs});delete S.drafts[day.id];save();
+  const ups=day.ex.filter(e=>logs[e.id]&&nextKg(e)).map(e=>e.n+' → '+fmt(nextKg(e))+' kg');
   stopRest();curDay=null;renderHoy();window.scrollTo(0,0);
-  toast('Guardado · '+n+' series · '+Math.round(vol).toLocaleString('es')+' kg'+(prs?' · '+prs+(prs>1?' récords':' récord'):''));
+  toast('Guardado · '+n+' series · '+Math.round(vol).toLocaleString('es')+' kg'+(prs?' · '+prs+(prs>1?' récords':' récord'):'')+(ups.length?'. Sube de peso la próxima vez: '+ups.join(', '):''),ups.length?10000:3200);
 }
 
 /* ---------- Descanso entre series ---------- */
@@ -329,6 +330,7 @@ function renderProg(){
       <div class="stat"><b class="num">${fmt(pr)}</b><span>Récord (kg)</span></div>
       <div class="stat"><b class="num">${fmt(best1)}</b><span>1RM estimado</span></div>
       <div class="stat"><b class="num" style="color:${diff>=0?'var(--ok)':'var(--muted)'}">${diff>0?'+':''}${fmt(diff)}</b><span>Desde el inicio</span></div></div>
+      ${nextKg(e)?`<div class="panel"><b>Listo para subir:</b> prueba ${fmt(nextKg(e))} kg en tu próxima sesión.</div>`:''}
       <div class="panel">${chart(pts)}</div>
       <div class="panel"><table class="hist"><thead><tr><th>Fecha</th><th>Series (kg×rep)</th></tr></thead><tbody>
       ${h.slice(-8).reverse().map(x=>`<tr><td>${dm(x.date)}</td><td>${x.sets.map(s=>fmt(s.kg)+'×'+s.reps).join(' · ')}</td></tr>`).join('')}</tbody></table></div>`;
