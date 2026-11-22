@@ -101,6 +101,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .dlb b{font-family:var(--f-display);font-size:1.35rem;line-height:1.1}
 .dlb span{font-size:.88rem;color:var(--muted)}
 .up.dlp{background:var(--rest)}
+.hero .rb{margin-top:10px;border:0;border-radius:10px;min-height:44px;padding:0 16px;font-weight:600;background:color-mix(in srgb,currentColor 22%,transparent);color:inherit;align-self:flex-start}
+.fix{margin-top:14px}
+.fix summary{font-size:.85rem;color:var(--muted);cursor:pointer;padding:8px 0}
+.fixb{padding:4px 0 8px}
 .dlt{overflow-x:auto;margin-top:10px}
 .dlt .hist td,.dlt .hist th{font-size:.78rem}
 #holdbox{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(70px + env(safe-area-inset-bottom,0px));max-width:528px;margin:0 auto;border-radius:20px;padding:14px 16px;text-align:center;z-index:35;color:var(--on-dc);box-shadow:0 8px 28px #0006;display:flex;flex-direction:column;align-items:center}
@@ -268,10 +272,10 @@ function bestKg(id){const h=hist(id);return h.length?Math.max(...h.map(x=>Math.m
 const e1rm=s=>s.kg*(1+s.reps/30);
 
 function suggest(){
-  const l=S.sessions[S.sessions.length-1];
+  let l=S.sessions[S.sessions.length-1];const o=S.lastO;if(o&&(!l||o.date>=l.date))l=o;
   if(!l)return{i:0,msg:'Empieza por <b>Empuje</b>'};
   const li=PLAN.findIndex(p=>p.id===l.day),ago=dayDiff(l.date,today());
-  if(li===2&&ago<=1)return{i:0,rest:true,msg:ago===0?'Cerraste el ciclo. <b>Mañana descansas.</b>':'<b>Hoy toca descanso.</b> Mañana vuelves con Empuje.'};
+  if(li===2&&ago<=1)return{i:0,rest:true,title:ago===0?'Listo por hoy':'Descanso',msg:ago===0?'Cerraste el ciclo. <b>Mañana descansas.</b>':'<b>Hoy toca descanso.</b> Mañana vuelves con Empuje.'};
   const ni=(li+1)%3;
   return{i:ni,msg:'Hoy toca <b>'+PLAN[ni].name+'</b> · último: '+PLAN[li].name+(ago?' hace '+ago+(ago===1?' día':' días'):' hoy')};
 }
@@ -288,6 +292,14 @@ function renderHoy(){
   if(!curDay)curDay=PLAN[sg.i].id;
   const day=PLAN.find(p=>p.id===curDay),dr=getDraft(day),c=counts(day,dr),rd=S.dl.on?0:day.ex.filter(e=>nextKg(e)).length,kp=S.dl.on?0:day.ex.filter(e=>keepMsg(e)).length;
   const dt=new Date().toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
+  const ay=addDays(today(),-1);
+  const fix=`<details class="fix"><summary>¿No es correcto? Cambiar el último día</summary><div class="fixb"><span class="note">Ayer entrené:</span><div class="chips" style="margin:6px 0 0">${PLAN.map(p=>`<button class="chip" data-fix="${p.id}" style="--dc:${p.color}" aria-pressed="${!!(S.lastO&&S.lastO.day===p.id&&S.lastO.date===ay)}">${p.name}</button>`).join('')}</div></div></details>`;
+  if(sg.rest&&S.forceDay!==today()){
+    app.innerHTML=`<div class="hero" style="--dc:var(--muted)"><span class="eyebrow">${dt}</span><h1>${sg.title}</h1><div class="hero-sub">${sg.msg}</div><button class="rb" id="trainAnyway">Entrenar igual · ${PLAN[sg.i].name}</button></div>
+  ${dlBanner()}
+  ${fix}`;
+    return;
+  }
   app.innerHTML=`
   <div class="hero" style="--dc:${day.color}"><span class="eyebrow">${dt}</span><h1>${day.name}</h1><div class="hero-sub">${sg.msg}${rd?`<br><b>${rd} ejercicio${rd>1?'s':''} listo${rd>1?'s':''} para subir de peso</b>`:''}${kp?`<br>${kp} para mantener el peso`:''}</div>
     <div class="hero-p"><span class="c"><span id="pdone">${c.d}</span> / ${c.t} series</span><div class="pbar"><i id="pfill" style="width:${c.t?c.d/c.t*100:0}%"></i></div></div></div>
@@ -295,7 +307,8 @@ function renderHoy(){
   <div class="chips">${PLAN.map((p,i)=>`<button class="chip" data-day="${p.id}" style="--dc:${p.color}" aria-pressed="${p.id===curDay}">${p.name}<small>${i===sg.i&&!sg.rest?'Hoy':''}</small></button>`).join('')}</div>
   ${warmCard(day,dr)}
   ${day.ex.map((e,k)=>exCard(day,e,dr,k)).join('')}
-  <button class="btn" id="finish">Terminar entrenamiento</button>`;
+  <button class="btn" id="finish">Terminar entrenamiento</button>
+  ${fix}`;
 }
 function nextKg(e){const p=lastFor(e.id);if(!p||p.sets.length<e.sets||!p.sets.every(s=>s.reps>=e.reps))return null;const top=Math.max(...p.sets.map(s=>s.kg));return top>0?top+e.inc:null}
 function keepMsg(e){const p=lastFor(e.id);if(!p||nextKg(e)!==null)return null;const top=Math.max(...p.sets.map(s=>s.kg));if(!(top>0))return null;const miss=Math.max(e.sets-p.sets.filter(s=>s.reps>=e.reps).length,0);return 'Mantén '+fmt(top)+' '+U(e)+' · '+(miss===1?'falta 1 serie':'faltan '+miss+' series')+' de '+e.reps+' reps'}
@@ -643,7 +656,9 @@ function show(t){
 document.addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t)return;
   if(t.dataset.tab){show(t.dataset.tab);window.scrollTo(0,0);return}
-  if(t.dataset.day){curDay=t.dataset.day;renderHoy();return}
+  if(t.dataset.day){curDay=t.dataset.day;S.forceDay=today();save();renderHoy();return}
+  if(t.id==='trainAnyway'){S.forceDay=today();curDay=null;save();renderHoy();return}
+  if(t.dataset.fix){S.lastO={day:t.dataset.fix,date:addDays(today(),-1)};delete S.forceDay;curDay=null;save();renderHoy();return}
   if(t.classList.contains('ck')){onCheck(t.closest('.set'));return}
   if(t.classList.contains('sb')){absSet(t);return}
   if(t.id==='absFinish'){absFinish();return}
