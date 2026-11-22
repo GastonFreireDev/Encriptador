@@ -36,7 +36,8 @@ h2{font-size:1.5rem}
 h3{font-size:1.2rem;line-height:1.15}
 .muted{color:var(--muted)}
 .eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-button{font:inherit;color:inherit;cursor:pointer}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-variant-numeric:tabular-nums}
 
@@ -71,16 +72,24 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .note{font-size:.8rem;color:var(--muted)}
 .up.keep{background:var(--muted)}
 .sbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.sb{min-height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);font-weight:600;font-size:.9rem}
-.sb.done{background:var(--ok);border-color:var(--ok);color:var(--on-dc)}
+.sb,.wk{min-height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);font-weight:600;font-size:.9rem}
+.sb.done,.wk.done{background:var(--ok);border-color:var(--ok);color:var(--on-dc)}
 .aw{display:flex;align-items:center;gap:10px;margin-top:10px}
 .aw .f{width:130px;flex:none}
 .row2+.panel{margin-top:16px}
+.dlb{border-radius:16px;padding:14px;margin:0 0 14px;display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--stop);background:color-mix(in srgb,var(--stop) 10%,var(--surface))}
+.dlb.on{border-color:var(--rest);background:color-mix(in srgb,var(--rest) 10%,var(--surface))}
+.dlb.back{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--surface))}
+.dlb b{font-family:var(--f-display);font-size:1.35rem;line-height:1.1}
+.dlb span{font-size:.88rem;color:var(--muted)}
+.up.dlp{background:var(--rest)}
+.dlt{overflow-x:auto;margin-top:10px}
+.dlt .hist td,.dlt .hist th{font-size:.78rem}
 #holdbox{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(70px + env(safe-area-inset-bottom,0px));max-width:528px;margin:0 auto;border-radius:20px;padding:14px 16px;text-align:center;z-index:35;color:var(--on-dc);box-shadow:0 8px 28px #0006;display:flex;flex-direction:column;align-items:center}
 #holdbox.prep{background:var(--rest)}
 #holdbox.work{background:var(--ok)}
 #hn{font-family:var(--f-display);font-weight:700;font-size:1.25rem;letter-spacing:.05em;text-transform:uppercase}
-#ht{font-family:var(--f-display);font-weight:700;font-size:6rem;line-height:1;font-variant-numeric:tabular-nums}
+#ht{font-family:var(--f-display);font-weight:700;font-size:5.6rem;line-height:1;font-variant-numeric:tabular-nums}
 #hx{margin-top:6px;border:0;background:color-mix(in srgb,currentColor 22%,transparent);color:inherit;border-radius:10px;min-height:44px;padding:0 22px;font-weight:600}
 .hint{font-size:.8rem;color:var(--muted);margin:2px 0 10px;overflow-wrap:anywhere}
 .up{display:inline-block;background:var(--dc);color:var(--on-dc);border-radius:999px;font-size:.72rem;font-weight:600;padding:2px 9px;margin-right:6px}
@@ -164,7 +173,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stro
 #restchip b{font-family:var(--f-display);font-size:1.7rem;font-variant-numeric:tabular-nums;margin-right:auto;line-height:1}
 #restchip span{font-size:.75rem;opacity:.7}
 #restchip button{border:0;background:#ffffff26;color:inherit;border-radius:8px;min-width:46px;min-height:40px;font-weight:600}
-#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(130px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);
+#toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));background:var(--fg);color:var(--bg);
   padding:10px 16px;border-radius:16px;font-size:.88rem;font-weight:500;z-index:40;max-width:90vw;text-align:center}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (max-width:380px){.tb .big{font-size:4.4rem}.hero h1{font-size:2.8rem}}
@@ -210,7 +219,7 @@ const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 /* ---------- Estado ---------- */
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
-S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}}},S);
+S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}},dl:{on:false,start:null,cycle:null,snooze:null,base:{},back:{}}},S);
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 let tab='hoy', curDay=null;
 
@@ -235,7 +244,7 @@ function beep(f=880,d=.15){try{AC=AC||new (window.AudioContext||window.webkitAud
 const vibe=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 
 /* ---------- Historial ---------- */
-function hist(id){return S.sessions.filter(s=>s.logs[id]&&s.logs[id].length).map(s=>({date:s.date,sets:s.logs[id]}))}
+function hist(id){return S.sessions.filter(s=>!s.dl&&s.logs[id]&&s.logs[id].length).map(s=>({date:s.date,sets:s.logs[id]}))}
 function lastFor(id){const h=hist(id);return h.length?h[h.length-1]:null}
 function bestKg(id){const h=hist(id);return h.length?Math.max(...h.map(x=>Math.max(...x.sets.map(s=>s.kg)))):null}
 const e1rm=s=>s.kg*(1+s.reps/30);
@@ -259,12 +268,14 @@ const CHECK='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke=
 function renderHoy(){
   const sg=suggest();
   if(!curDay)curDay=PLAN[sg.i].id;
-  const day=PLAN.find(p=>p.id===curDay),dr=getDraft(day),c=counts(day,dr),rd=day.ex.filter(e=>nextKg(e)).length,kp=day.ex.filter(e=>keepMsg(e)).length;
+  const day=PLAN.find(p=>p.id===curDay),dr=getDraft(day),c=counts(day,dr),rd=S.dl.on?0:day.ex.filter(e=>nextKg(e)).length,kp=S.dl.on?0:day.ex.filter(e=>keepMsg(e)).length;
   const dt=new Date().toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
   app.innerHTML=`
   <div class="hero" style="--dc:${day.color}"><span class="eyebrow">${dt}</span><h1>${day.name}</h1><div class="hero-sub">${sg.msg}${rd?`<br><b>${rd} ejercicio${rd>1?'s':''} listo${rd>1?'s':''} para subir de peso</b>`:''}${kp?`<br>${kp} para mantener el peso`:''}</div>
     <div class="hero-p"><span class="c"><span id="pdone">${c.d}</span> / ${c.t} series</span><div class="pbar"><i id="pfill" style="width:${c.t?c.d/c.t*100:0}%"></i></div></div></div>
+  ${dlBanner()}
   <div class="chips">${PLAN.map((p,i)=>`<button class="chip" data-day="${p.id}" style="--dc:${p.color}" aria-pressed="${p.id===curDay}">${p.name}<small>${i===sg.i&&!sg.rest?'Hoy':''}</small></button>`).join('')}</div>
+  ${warmCard(day,dr)}
   ${day.ex.map((e,k)=>exCard(day,e,dr,k)).join('')}
   <button class="btn" id="finish">Terminar entrenamiento</button>`;
 }
@@ -279,13 +290,16 @@ function exCard(day,e,dr,k){
     const nk=nextKg(e);
     hint=(nk?`<span class="up">Sube a ${fmt(nk)} ${U(e)}</span>`:keepMsg(e)?`<span class="up keep">${keepMsg(e)}</span>`:'')+'Última: '+prev.sets.map(s=>fmt(s.kg)+'×'+s.reps).join(' · ');
   }
+  const wt=S.dl.on?dlWeight(e):null;
+  if(wt!=null)hint=`<span class="up dlp">Descarga: usa ${fmt(wt)} ${U(e)}</span>Normal: ${fmt(S.dl.base[e.id]!=null?S.dl.base[e.id]:topOf(e))} ${U(e)}`;
+  else if(!S.dl.on&&S.dl.back[e.id]&&prev)hint=`<span class="up">Vuelve a ${fmt(nextKg(e)||topOf(e))} ${U(e)}</span>Antes de la descarga: ${fmt(topOf(e))} ${U(e)}`;
   return `<section class="ex" style="--dc:${day.color}">
     <div class="ex-top"><div class="idx">${k+1}</div><div class="tt"><h3>${e.n}</h3>${e.note?`<div class="note">${e.note}</div>`:''}</div><div class="target">${e.sets}×${e.reps}</div></div>
     <div class="hint">${hint}</div>
     ${sets.map((s,i)=>{const p=prev?(prev.sets[i]||prev.sets[prev.sets.length-1]):null;
       return `<div class="set${s.done?' done':''}" data-ex="${e.id}" data-i="${i}">
         <span class="n">${i+1}</span>
-        <label class="f"><input class="kg" inputmode="decimal" placeholder="${p?fmt(p.kg):U(e)}" value="${s.kg}" aria-label="Peso serie ${i+1}"><i>${U(e)}</i></label>
+        <label class="f"><input class="kg" inputmode="decimal" placeholder="${wt!=null?fmt(wt):p?fmt(p.kg):U(e)}" value="${s.kg}" aria-label="Peso serie ${i+1}"><i>${U(e)}</i></label>
         <label class="f"><input class="reps" inputmode="numeric" placeholder="${p?p.reps:e.reps}" value="${s.reps}" aria-label="Repeticiones serie ${i+1}"><i>rep</i></label>
         <button class="ck" aria-label="Serie ${i+1} hecha">${CHECK}</button></div>`}).join('')}
   </section>`;
@@ -310,9 +324,9 @@ function finish(){
     logs[e.id]=sets;n+=sets.length;sets.forEach(s=>vol+=s.kg*s.reps*(e.u==='lb'?.4536:1));
   });
   if(!n){toast('Marca al menos una serie con ✓');return}
-  S.sessions.push({date:today(),day:day.id,logs});delete S.drafts[day.id];save();
-  const ups=day.ex.filter(e=>logs[e.id]&&nextKg(e)).map(e=>e.n+' → '+fmt(nextKg(e))+' '+U(e));
-  const keeps=day.ex.filter(e=>logs[e.id]&&keepMsg(e)).map(e=>e.n);
+  S.sessions.push({date:today(),day:day.id,logs,dl:S.dl.on||undefined});if(!S.dl.on)day.ex.forEach(e=>{if(logs[e.id])delete S.dl.back[e.id]});delete S.drafts[day.id];save();
+  const ups=day.ex.filter(e=>!S.dl.on&&logs[e.id]&&nextKg(e)).map(e=>e.n+' → '+fmt(nextKg(e))+' '+U(e));
+  const keeps=day.ex.filter(e=>!S.dl.on&&logs[e.id]&&keepMsg(e)).map(e=>e.n);
   stopRest();curDay=null;renderHoy();window.scrollTo(0,0);
   toast('Guardado · '+n+' series · '+Math.round(vol).toLocaleString('es')+' kg'+(prs?' · '+prs+(prs>1?' récords':' récord'):'')+(ups.length?'. Sube de peso la próxima vez: '+ups.join(', '):'')+(keeps.length?'. Mantén el peso en: '+keeps.join(', '):''),ups.length||keeps.length?10000:3200);
 }
@@ -505,13 +519,14 @@ function absSet(b){
 }
 /* Cronómetro de ejercicios con tiempo */
 const HD={t:null,ph:[],i:0,end:0,sec:-1,key:0,idx:0,j:0,name:''};
-function holdPaint(){const p=HD.ph[HD.i],s=Math.max(0,Math.ceil((HD.end-Date.now())/1000));$('#hn').textContent=HD.name+' · '+p.n;$('#ht').textContent=s;$('#holdbox').className=p.k}
-function stopHold(){clearInterval(HD.t);HD.t=null;$('#holdbox').hidden=true}
+function holdPaint(){const p=HD.ph[HD.i],s=Math.max(0,Math.ceil((HD.end-Date.now())/1000));$('#hn').textContent=HD.name+' · '+p.n;$('#ht').textContent=(HD.mode==='warm'||s>=100)?mmss(s):s;$('#holdbox').className=p.k}
+function stopHold(){clearInterval(HD.t);HD.t=null;$('#holdbox').hidden=true;try{HD.wl&&HD.wl.release()}catch(e){}HD.wl=null}
+function wake(){try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>HD.wl=l).catch(()=>{})}catch(e){}}
 function holdStart(i,j){
   const e=absPlan(S.absD.key).ex[i],side=e.per==='por lado',ph=[{n:'Prepárate',d:5,k:'prep'},{n:side?'Lado 1':'Aguanta',d:e.val,k:'work'}];
   if(side)ph.push({n:'Lado 2',d:e.val,k:'work'});
-  stopRest();stopHold();Object.assign(HD,{ph,i:0,end:Date.now()+5000,sec:-1,key:S.absD.key,idx:i,j,name:e.n});
-  $('#holdbox').hidden=false;HD.t=setInterval(holdTick,100);beep(600,.08);holdPaint();
+  stopRest();stopHold();Object.assign(HD,{mode:'abs',ph,i:0,end:Date.now()+5000,sec:-1,key:S.absD.key,idx:i,j,name:e.n});
+  $('#holdbox').hidden=false;HD.t=setInterval(holdTick,100);beep(600,.08);holdPaint();wake();
 }
 function holdTick(){
   let ms=HD.end-Date.now();
@@ -521,6 +536,7 @@ function holdTick(){
 }
 function holdDone(){
   stopHold();beep(1000,.5);vibe([300,100,300]);
+  if(HD.mode==='warm'){const dr=getDraft(PLAN.find(p=>p.id===HD.day));dr.warm=true;save();if(tab==='hoy')renderHoy();toast('Calentamiento listo');return}
   if(S.absD&&S.absD.key===HD.key){
     const n=absPlan(HD.key).sets,a=S.absD.sets[HD.idx]=S.absD.sets[HD.idx]||Array(n).fill(false);
     a[HD.j]=true;save();if(tab==='abs')renderAbs();startRest(45);
@@ -538,19 +554,57 @@ function absFinish(){
 }
 function absGo(n){const A=S.abs;A.adj=Math.max(-A.log.length,Math.min(n,100)-1-A.log.length);save();renderAbs();window.scrollTo(0,0)}
 
+/* ---------- Calentamiento y semana de descarga ---------- */
+const DL_DAYS=42,DL_LEN=7,DL_PCT=.6;
+function addDays(d,n){const x=new Date(d+'T00:00:00');x.setDate(x.getDate()+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate())}
+const roundTo=(v,e)=>{const st=e.u==='lb'?5:2.5;return Math.max(st,Math.round(v/st)*st)};
+function topOf(e){const p=lastFor(e.id);return p?Math.max(...p.sets.map(s=>s.kg)):null}
+function dlWeight(e){const b=S.dl.base[e.id]!=null?S.dl.base[e.id]:topOf(e);return b>0?roundTo(b*DL_PCT,e):null}
+function cycleStart(){if(S.dl.cycle)return S.dl.cycle;const f=S.sessions[0];return f?f.date:null}
+function dlDue(){const d=S.dl,cs=cycleStart();if(d.on||!cs||S.sessions.length<6)return false;if(d.snooze&&today()<d.snooze)return false;return dayDiff(cs,today())>=DL_DAYS}
+function dlStart(){const d=S.dl;d.on=true;d.start=today();d.snooze=null;d.base={};PLAN.forEach(p=>p.ex.forEach(e=>{const t=topOf(e);if(t!=null)d.base[e.id]=t}));save();toast('Semana de descarga activa: usa el 60% del peso',5000)}
+function dlEnd(){const d=S.dl;d.back={};Object.keys(d.base).forEach(k=>d.back[k]=true);d.on=false;d.cycle=today();d.snooze=null;save();toast('Vuelves a subir: mira el peso en cada ejercicio',5000)}
+function dlRows(){return PLAN.flatMap(d=>d.ex).map(e=>{const base=S.dl.on&&S.dl.base[e.id]!=null?S.dl.base[e.id]:topOf(e);if(!(base>0))return null;return{e,base,dl:roundTo(base*DL_PCT,e),ret:nextKg(e)||base}}).filter(Boolean)}
+function dlBanner(){
+  const d=S.dl;
+  if(d.on){const ended=dayDiff(d.start,today())>=DL_LEN;
+    return `<div class="dlb on"><b>${ended?'Terminó la semana de descarga':'Semana de descarga'}</b><span>${ended?'Vuelve a tus pesos normales. Cada ejercicio te dice con cuánto.':'Hasta el '+dm(addDays(d.start,DL_LEN))+'. Usa el 60% del peso; cada ejercicio te dice cuánto.'}</span><button class="btn sm${ended?'':' ghost'}" id="dlEnd">${ended?'Volver a subir de peso':'Terminar descarga ya'}</button></div>`}
+  if(dlDue())return `<div class="dlb"><b>Toca semana de descarga</b><span>Llevas ${Math.floor(dayDiff(cycleStart(),today())/7)} semanas entrenando fuerte. Baja al 60% del peso esta semana.</span><div class="row2" style="grid-template-columns:1fr 1fr;margin:0"><button class="btn sm" id="dlStart">Empezar descarga</button><button class="btn sm ghost" id="dlLater">Más tarde</button></div></div>`;
+  if(Object.keys(d.back).length)return `<div class="dlb back"><b>Vuelves a subir</b><span>Usa el peso que dice cada ejercicio hasta que registres tu primera sesión.</span></div>`;
+  return '';
+}
+function dlPanel(){
+  const d=S.dl,rows=dlRows(),cs=cycleStart();let st;
+  if(d.on){const left=DL_LEN-dayDiff(d.start,today());st=left>0?'Activa desde el '+dm(d.start)+'. Quedan '+left+(left>1?' días.':' día.'):'Ya pasó la semana: toca volver a subir.'}
+  else if(dlDue())st='Toca descarga ahora.';
+  else if(cs){const n=DL_DAYS-dayDiff(cs,today());st=n>0?'Próxima descarga en '+n+(n>1?' días':' día')+' ('+dm(addDays(cs,DL_DAYS))+').':'Puedes empezarla cuando quieras.'}
+  else st='Registra entrenamientos y la app cuenta las semanas.';
+  return `<div class="panel"><h3 style="margin-bottom:6px">Semana de descarga</h3><div class="note" style="margin-bottom:10px">${st} Cada 6 semanas, una semana al 60% del peso.</div>
+    <button class="btn sm${d.on?' ghost':''}" id="${d.on?'dlEnd':'dlStart'}">${d.on?'Terminar descarga':'Empezar descarga ahora'}</button>
+    ${rows.length?`<div class="dlt"><table class="hist"><thead><tr><th>Ejercicio</th><th>Normal</th><th>Descarga</th><th>Al volver</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.e.n}</td><td>${fmt(r.base)} ${U(r.e)}</td><td>${fmt(r.dl)} ${U(r.e)}</td><td>${fmt(r.ret)} ${U(r.e)}</td></tr>`).join('')}</tbody></table></div><div class="note" style="margin-top:6px">"Al volver" es tu peso de antes, o el siguiente si ya estabas listo para subir.</div>`:'<div class="note">Los pesos aparecerán cuando registres tus entrenamientos.</div>'}</div>`;
+}
+function warmCard(day,dr){
+  return `<section class="ex" style="--dc:${day.color}"><div class="ex-top"><div class="idx"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h5v-4h5v-4h5V8h3"/></svg></div><div class="tt"><h3>Calentamiento</h3><div class="note">Escaladora a ritmo suave</div></div><div class="target">10 min</div></div>
+    <div class="row2" style="grid-template-columns:1fr auto;margin-top:10px"><button class="btn sm" id="warmGo">▶ Iniciar 10:00</button><button class="wk${dr.warm?' done':''}" id="warmOk" style="min-width:96px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);font-weight:600">${dr.warm?'Hecho':'Marcar'}</button></div></section>`;
+}
+function warmStart(){
+  stopRest();stopHold();
+  Object.assign(HD,{mode:'warm',ph:[{n:'Escaladora',d:600,k:'work'}],i:0,end:Date.now()+600000,sec:-1,name:'Calentamiento',day:curDay});
+  $('#holdbox').hidden=false;HD.t=setInterval(holdTick,100);beep(600,.08);holdPaint();wake();
+}
+
 /* ---------- CONSEJOS ---------- */
 const TIPS=[
  ['Sube peso cuando cumplas todas las series','Si haces 4×8 completas con un peso, la próxima vez sube un escalón: 5 lb en las máquinas en libras, 2,5 kg en poleas y 5 kg en peso muerto. Si te faltan repeticiones, mantén el peso hasta completarlas. La app te marca “Sube a …” sola. Es lo que más resultados da.'],
  ['Termina cerca del fallo','Deja 1 o 2 repeticiones en reserva en cada serie. Si siempre sobra mucho, estás muy liviano.'],
- ['Calienta solo lo necesario','Antes del primer ejercicio del día haz 1 o 2 series ligeras. El resto ya va calentando.'],
- ['Cubre lo que le falta a tu rutina','No tienes elevaciones laterales (hombro) ni abdomen. Agrega 3×12 de cada una al final de Empuje y de Piernas.'],
+ ['Agrega hombro lateral','A tu rutina le faltan elevaciones laterales. Agrega 3×12 al final de Empuje.'],
  ['Come y duerme','Unos 1,6 a 2 g de proteína por kilo de peso al día y 7 a 8 horas de sueño. Sin esto el resto rinde menos.'],
- ['Descarga cada 6 a 8 semanas','Una semana con la mitad del peso. Vuelves más fuerte y cuidas articulaciones.'],
- ['Tabata en el día de descanso (opcional)','Una sesión corta de 4 a 8 minutos, 1 o 2 veces por semana, como cardio. No lo hagas antes de piernas.']
+ ['Semana de descarga cada 6 semanas','La app te avisa cuándo empezarla. Esa semana usas el 60% del peso y al terminar te dice con cuánto volver. Los pesos de cada ejercicio están abajo.']
 ];
 function renderMas(){
   app.innerHTML=`<div class="head"><span class="eyebrow">Lo que más rinde</span><h1>Consejos</h1></div>
   <div class="panel" style="margin-top:0">${TIPS.map(t=>`<div class="tip"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}</div>
+  ${dlPanel()}
   <div class="panel"><h3 style="margin-bottom:8px">Apariencia</h3>
     <select id="themeSel" aria-label="Apariencia">${[['auto','Automático (según el teléfono)'],['light','Claro'],['dark','Oscuro']].map(([v,l])=>`<option value="${v}"${v===S.theme?' selected':''}>${l}</option>`).join('')}</select></div>
   <div class="panel"><h3 style="margin-bottom:8px">Descanso entre series</h3>
@@ -580,6 +634,11 @@ document.addEventListener('click',e=>{
   if(t.id==='lvGo'){const n=parseInt($('#lvIn').value);if(n>=1&&n<=100)absGo(n);else toast('Escribe un nivel de 1 a 100');return}
   if(t.id==='hx'){stopHold();return}
   if(t.id==='finish'){finish();return}
+  if(t.id==='warmGo'){warmStart();return}
+  if(t.id==='warmOk'){const dr=getDraft(PLAN.find(p=>p.id===curDay));dr.warm=!dr.warm;save();renderHoy();return}
+  if(t.id==='dlStart'){dlStart();show(tab);return}
+  if(t.id==='dlEnd'){dlEnd();show(tab);return}
+  if(t.id==='dlLater'){S.dl.snooze=addDays(today(),2);save();show(tab);return}
   if(t.id==='r15'){rest.end+=15000;restTick();return}
   if(t.id==='rx'){stopRest();stopHold();return}
   if(t.dataset.k){const k=t.dataset.k;S.tabata[k]=Math.min(+t.dataset.mx,Math.max(+t.dataset.mn,S.tabata[k]+(+t.dataset.d)));TB.ph=[];TB.i=0;save();renderTabata();return}
@@ -607,5 +666,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&TB.run)tbTick()});
 function applyTheme(){const r=document.documentElement;if(S.theme==='light'||S.theme==='dark')r.setAttribute('data-theme',S.theme);else r.removeAttribute('data-theme')}
 applyTheme();
+if(dlDue())setTimeout(()=>toast('Toca semana de descarga: mira el aviso en Hoy',6000),700);
+else if(S.dl.on&&dayDiff(S.dl.start,today())>=DL_LEN)setTimeout(()=>toast('Terminó la descarga: vuelve a subir de peso',6000),700);
 show('hoy');
 </script>
