@@ -69,6 +69,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .idx{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--dc) 15%,transparent);color:var(--dc);font-family:var(--f-display);font-weight:700;font-size:1.15rem}
 .target{font-family:var(--f-display);font-weight:700;font-size:1.1rem;color:var(--dc);white-space:nowrap;background:color-mix(in srgb,var(--dc) 13%,transparent);padding:3px 10px;border-radius:999px}
 .note{font-size:.8rem;color:var(--muted)}
+.up.keep{background:var(--muted)}
 .hint{font-size:.8rem;color:var(--muted);margin:2px 0 10px;overflow-wrap:anywhere}
 .up{display:inline-block;background:var(--dc);color:var(--on-dc);border-radius:999px;font-size:.72rem;font-weight:600;padding:2px 9px;margin-right:6px}
 .set{display:grid;grid-template-columns:1.4rem 1fr 1fr 46px;gap:8px;align-items:center;margin-top:6px}
@@ -244,16 +245,17 @@ const CHECK='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke=
 function renderHoy(){
   const sg=suggest();
   if(!curDay)curDay=PLAN[sg.i].id;
-  const day=PLAN.find(p=>p.id===curDay),dr=getDraft(day),c=counts(day,dr),rd=day.ex.filter(e=>nextKg(e)).length;
+  const day=PLAN.find(p=>p.id===curDay),dr=getDraft(day),c=counts(day,dr),rd=day.ex.filter(e=>nextKg(e)).length,kp=day.ex.filter(e=>keepMsg(e)).length;
   const dt=new Date().toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
   app.innerHTML=`
-  <div class="hero" style="--dc:${day.color}"><span class="eyebrow">${dt}</span><h1>${day.name}</h1><div class="hero-sub">${sg.msg}${rd?`<br><b>${rd} ejercicio${rd>1?'s':''} listo${rd>1?'s':''} para subir de peso</b>`:''}</div>
+  <div class="hero" style="--dc:${day.color}"><span class="eyebrow">${dt}</span><h1>${day.name}</h1><div class="hero-sub">${sg.msg}${rd?`<br><b>${rd} ejercicio${rd>1?'s':''} listo${rd>1?'s':''} para subir de peso</b>`:''}${kp?`<br>${kp} para mantener el peso`:''}</div>
     <div class="hero-p"><span class="c"><span id="pdone">${c.d}</span> / ${c.t} series</span><div class="pbar"><i id="pfill" style="width:${c.t?c.d/c.t*100:0}%"></i></div></div></div>
   <div class="chips">${PLAN.map((p,i)=>`<button class="chip" data-day="${p.id}" style="--dc:${p.color}" aria-pressed="${p.id===curDay}">${p.name}<small>${i===sg.i&&!sg.rest?'Hoy':''}</small></button>`).join('')}</div>
   ${day.ex.map((e,k)=>exCard(day,e,dr,k)).join('')}
   <button class="btn" id="finish">Terminar entrenamiento</button>`;
 }
 function nextKg(e){const p=lastFor(e.id);if(!p||p.sets.length<e.sets||!p.sets.every(s=>s.reps>=e.reps))return null;const top=Math.max(...p.sets.map(s=>s.kg));return top>0?top+e.inc:null}
+function keepMsg(e){const p=lastFor(e.id);if(!p||nextKg(e)!==null)return null;const top=Math.max(...p.sets.map(s=>s.kg));if(!(top>0))return null;const miss=Math.max(e.sets-p.sets.filter(s=>s.reps>=e.reps).length,0);return 'Mantén '+fmt(top)+' '+U(e)+' · '+(miss===1?'falta 1 serie':'faltan '+miss+' series')+' de '+e.reps+' reps'}
 function counts(day,dr){let d=0,t=0;day.ex.forEach(e=>{t+=e.sets;dr.logs[e.id].forEach(s=>{if(s.done)d++})});return{d,t}}
 function updHero(day){const c=counts(day,getDraft(day));$('#pdone').textContent=c.d;$('#pfill').style.width=(c.t?c.d/c.t*100:0)+'%'}
 function exCard(day,e,dr,k){
@@ -261,7 +263,7 @@ function exCard(day,e,dr,k){
   let hint='Primera vez: anota el peso que uses.';
   if(prev){
     const nk=nextKg(e);
-    hint=(nk?`<span class="up">Sube a ${fmt(nk)} ${U(e)}</span>`:'')+'Última: '+prev.sets.map(s=>fmt(s.kg)+'×'+s.reps).join(' · ');
+    hint=(nk?`<span class="up">Sube a ${fmt(nk)} ${U(e)}</span>`:keepMsg(e)?`<span class="up keep">${keepMsg(e)}</span>`:'')+'Última: '+prev.sets.map(s=>fmt(s.kg)+'×'+s.reps).join(' · ');
   }
   return `<section class="ex" style="--dc:${day.color}">
     <div class="ex-top"><div class="idx">${k+1}</div><div class="tt"><h3>${e.n}</h3>${e.note?`<div class="note">${e.note}</div>`:''}</div><div class="target">${e.sets}×${e.reps}</div></div>
@@ -296,8 +298,9 @@ function finish(){
   if(!n){toast('Marca al menos una serie con ✓');return}
   S.sessions.push({date:today(),day:day.id,logs});delete S.drafts[day.id];save();
   const ups=day.ex.filter(e=>logs[e.id]&&nextKg(e)).map(e=>e.n+' → '+fmt(nextKg(e))+' '+U(e));
+  const keeps=day.ex.filter(e=>logs[e.id]&&keepMsg(e)).map(e=>e.n);
   stopRest();curDay=null;renderHoy();window.scrollTo(0,0);
-  toast('Guardado · '+n+' series · '+Math.round(vol).toLocaleString('es')+' kg'+(prs?' · '+prs+(prs>1?' récords':' récord'):'')+(ups.length?'. Sube de peso la próxima vez: '+ups.join(', '):''),ups.length?10000:3200);
+  toast('Guardado · '+n+' series · '+Math.round(vol).toLocaleString('es')+' kg'+(prs?' · '+prs+(prs>1?' récords':' récord'):'')+(ups.length?'. Sube de peso la próxima vez: '+ups.join(', '):'')+(keeps.length?'. Mantén el peso en: '+keeps.join(', '):''),ups.length||keeps.length?10000:3200);
 }
 
 /* ---------- Descanso entre series ---------- */
@@ -332,6 +335,7 @@ function renderProg(){
       <div class="stat"><b class="num">${fmt(best1)}</b><span>1RM estimado</span></div>
       <div class="stat"><b class="num" style="color:${diff>=0?'var(--ok)':'var(--muted)'}">${diff>0?'+':''}${fmt(diff)}</b><span>Desde el inicio</span></div></div>
       ${nextKg(e)?`<div class="panel"><b>Listo para subir:</b> prueba ${fmt(nextKg(e))} ${U(e)} en tu próxima sesión.</div>`:''}
+      ${keepMsg(e)?`<div class="panel"><b>${keepMsg(e)}</b></div>`:''}
       <div class="panel">${chart(pts,U(e))}</div>
       <div class="panel"><table class="hist"><thead><tr><th>Fecha</th><th>Series (${U(e)}×rep)</th></tr></thead><tbody>
       ${h.slice(-8).reverse().map(x=>`<tr><td>${dm(x.date)}</td><td>${x.sets.map(s=>fmt(s.kg)+'×'+s.reps).join(' · ')}</td></tr>`).join('')}</tbody></table></div>`;
@@ -421,7 +425,7 @@ function tbReset(){tbStop();TB.ph=[];TB.i=0;TB.left=0;renderTabata()}
 
 /* ---------- CONSEJOS ---------- */
 const TIPS=[
- ['Sube peso cuando cumplas todas las series','Si haces 4×8 completas con un peso, la próxima vez sube un escalón: 5 lb en las máquinas en libras, 2,5 kg en poleas y 5 kg en peso muerto. La app te marca “Sube a …” sola. Es lo que más resultados da.'],
+ ['Sube peso cuando cumplas todas las series','Si haces 4×8 completas con un peso, la próxima vez sube un escalón: 5 lb en las máquinas en libras, 2,5 kg en poleas y 5 kg en peso muerto. Si te faltan repeticiones, mantén el peso hasta completarlas. La app te marca “Sube a …” sola. Es lo que más resultados da.'],
  ['Termina cerca del fallo','Deja 1 o 2 repeticiones en reserva en cada serie. Si siempre sobra mucho, estás muy liviano.'],
  ['Calienta solo lo necesario','Antes del primer ejercicio del día haz 1 o 2 series ligeras. El resto ya va calentando.'],
  ['Cubre lo que le falta a tu rutina','No tienes elevaciones laterales (hombro) ni abdomen. Agrega 3×12 de cada una al final de Empuje y de Piernas.'],
