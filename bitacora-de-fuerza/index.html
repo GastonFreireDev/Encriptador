@@ -70,6 +70,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .target{font-family:var(--f-display);font-weight:700;font-size:1.1rem;color:var(--dc);white-space:nowrap;background:color-mix(in srgb,var(--dc) 13%,transparent);padding:3px 10px;border-radius:999px}
 .note{font-size:.8rem;color:var(--muted)}
 .up.keep{background:var(--muted)}
+.sbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.sb{min-height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);font-weight:600;font-size:.9rem}
+.sb.done{background:var(--ok);border-color:var(--ok);color:var(--on-dc)}
+.aw{display:flex;align-items:center;gap:10px;margin-top:10px}
+.aw .f{width:130px;flex:none}
+.row2+.panel{margin-top:16px}
 .hint{font-size:.8rem;color:var(--muted);margin:2px 0 10px;overflow-wrap:anywhere}
 .up{display:inline-block;background:var(--dc);color:var(--on-dc);border-radius:999px;font-size:.72rem;font-weight:600;padding:2px 9px;margin-right:6px}
 .set{display:grid;grid-template-columns:1.4rem 1fr 1fr 46px;gap:8px;align-items:center;margin-top:6px}
@@ -142,7 +148,7 @@ svg.chart{width:100%;height:auto;display:block;overflow:visible}
 .tip span{color:var(--muted);font-size:.9rem}
 
 /* nav + rest chip + toast */
-nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);
   padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);z-index:20}
 nav button{border:0;background:none;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.7rem;font-weight:600;color:var(--muted);min-height:58px}
 nav button[aria-selected="true"]{color:var(--accent);box-shadow:inset 0 2px 0 var(--accent)}
@@ -165,6 +171,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stro
   <button role="tab" data-tab="hoy"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>Hoy</button>
   <button role="tab" data-tab="prog"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-5 4 3 6-8"/></svg>Progreso</button>
   <button role="tab" data-tab="tabata"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>Tabata</button>
+  <button role="tab" data-tab="abs"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="4"/><path d="M7 9h10M7 15h10M12 3v18"/></svg>Abdomen</button>
   <button role="tab" data-tab="mas"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Consejos</button>
 </nav>
 
@@ -196,7 +203,7 @@ const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 /* ---------- Estado ---------- */
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
-S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto'},S);
+S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}}},S);
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 let tab='hoy', curDay=null;
 
@@ -423,6 +430,96 @@ function tbGo(){
 }
 function tbReset(){tbStop();TB.ph=[];TB.i=0;TB.left=0;renderTabata()}
 
+/* ---------- ABDOMEN (en casa) ---------- */
+const ABS=[
+ [{name:'A',ex:[
+   {n:'Crunch',r:'15',c:'Hombros arriba, mirada al techo, sin jalar el cuello.'},
+   {n:'Plancha',r:'30 s',c:'Cuerpo recto, abdomen y glúteos apretados.'},
+   {n:'Elevación de rodillas tumbado',r:'12',c:'Sube las rodillas al pecho sin despegar la zona lumbar.'},
+   {n:'Bicho muerto',r:'10 por lado',c:'Lumbar pegada al piso; mueve brazo y pierna contrarios.'}]},
+  {name:'B',ex:[
+   {n:'Bicicleta',r:'20',c:'Lento; codo hacia la rodilla contraria.'},
+   {n:'Plancha lateral',r:'20 s por lado',c:'Cadera arriba, cuerpo en línea.'},
+   {n:'Crunch inverso',r:'12',c:'Sube la cadera con el abdomen, sin impulso.'},
+   {n:'Superman',r:'12',c:'Levanta brazos y piernas, pausa de 1 s arriba.'}]}],
+ [{name:'A',ex:[
+   {n:'Crunch con pausa',r:'15',c:'Mantén 2 s arriba apretando el abdomen.'},
+   {n:'Plancha',r:'45 s',c:'Cuerpo recto, abdomen y glúteos apretados.'},
+   {n:'Elevación de piernas tumbado',r:'12',c:'Piernas casi rectas; baja sin tocar el piso.'},
+   {n:'Escaladores',r:'30 s',c:'Rodillas al pecho rápido, cadera baja.'}]},
+  {name:'B',ex:[
+   {n:'Bicicleta lenta',r:'24',c:'Pausa de 1 s en cada lado.'},
+   {n:'Plancha lateral',r:'30 s por lado',c:'Cadera arriba, cuerpo en línea.'},
+   {n:'Tijeras',r:'30 s',c:'Piernas rectas cruzándose, lumbar pegada.'},
+   {n:'Bicho muerto con pausa',r:'12 por lado',c:'Pausa de 2 s con brazo y pierna extendidos.'}]}],
+ [{name:'A',ex:[
+   {n:'Crunch con disco al pecho',r:'15',w:1,c:'Disco abrazado al pecho con ambas manos.'},
+   {n:'Plancha con toque de hombro',r:'20 toques',c:'Sin balancear la cadera.'},
+   {n:'Elevación de piernas',r:'15',c:'Baja en 3 segundos.'},
+   {n:'Giro ruso',r:'20',c:'Gira el torso, no solo los brazos.'}]},
+  {name:'B',ex:[
+   {n:'Giro ruso con disco',r:'20',w:1,c:'Disco con ambas manos; pies arriba si puedes.'},
+   {n:'Plancha lateral con pierna arriba',r:'12 por lado',c:'Sube la pierna de arriba sin bajar la cadera.'},
+   {n:'Crunch inverso con pausa',r:'15',c:'Pausa de 2 s arriba, sin impulso.'},
+   {n:'Hollow hold',r:'25 s',c:'Lumbar pegada; brazos y piernas extendidos.'}]}],
+ [{name:'A',ex:[
+   {n:'Crunch con disco sobre la cabeza',r:'12',w:1,c:'Brazos estirados atrás; sube controlado.'},
+   {n:'Hollow hold',r:'35 s',c:'Lumbar pegada; brazos y piernas extendidos.'},
+   {n:'Elevación de piernas con pausa',r:'15',c:'Pausa de 2 s con las piernas a 45°.'},
+   {n:'Giro ruso con disco',r:'24',w:1,c:'Disco con ambas manos; pies arriba si puedes.'}]},
+  {name:'B',ex:[
+   {n:'Sit-up con disco al pecho',r:'12',w:1,c:'Sube completo y baja en 3 segundos.'},
+   {n:'Arrastre de disco en plancha',r:'10 por lado',w:1,c:'Desde plancha, pasa el disco por el piso de un lado a otro.'},
+   {n:'Escaladores lentos',r:'40 s',c:'Rodillas al pecho con control, cadera baja.'},
+   {n:'Leñador con disco',r:'12 por lado',w:1,c:'Diagonal de cadera a hombro, gira los pies.'}]}]
+];
+function absState(){const A=S.abs,c=Math.max(0,A.log.length+A.adj),lv=Math.min(3,Math.floor(c/4));return{c,lv,r:ABS[lv][c%2]}}
+function absCount(r){let d=0,t=0;r.ex.forEach((e,i)=>{t+=3;((S.absD&&S.absD.sets[i])||[]).forEach(x=>{if(x)d++})});return{d,t}}
+function updAbs(){const c=absCount(absState().r);$('#adone').textContent=c.d;$('#afill').style.width=(c.t?c.d/c.t*100:0)+'%'}
+function absCard(e,i,D){
+  const done=D.sets[i]||[],lw=S.abs.lastW[e.n];
+  return `<section class="ex" style="--dc:var(--pull)">
+    <div class="ex-top"><div class="idx">${i+1}</div><div class="tt"><h3>${e.n}</h3><div class="note">${e.c}</div></div><div class="target">3×${e.r}</div></div>
+    ${e.w?`<div class="aw"><label class="f"><input class="awi" data-i="${i}" inputmode="decimal" placeholder="${lw?fmt(lw):'kg'}" value="${D.w[i]||''}" aria-label="Peso del disco"><i>kg</i></label><span class="note">Peso del disco${lw?' · última vez '+fmt(lw)+' kg':''}</span></div>`:''}
+    <div class="sbs">${[0,1,2].map(j=>`<button class="sb${done[j]?' done':''}" data-i="${i}" data-j="${j}">Serie ${j+1}</button>`).join('')}</div></section>`;
+}
+function renderAbs(){
+  const {c,lv,r}=absState();
+  if(!S.absD||S.absD.key!==c)S.absD={key:c,sets:{},w:{}};
+  const D=S.absD,left=4-(c%4),cn=absCount(r),h=S.abs.log.slice(-5).reverse();
+  app.innerHTML=`<div class="hero" style="--dc:var(--pull)"><span class="eyebrow">En casa · unos 10 minutos</span><h1>Nivel ${lv+1}</h1>
+    <div class="hero-sub">Rutina ${r.name} · ${r.ex.length} ejercicios, 3 rondas<br>${lv<3?'<b>'+left+(left>1?' sesiones':' sesión')+' para el Nivel '+(lv+2)+'</b>':'<b>Nivel máximo:</b> sube el peso del disco poco a poco'}</div>
+    <div class="hero-p"><span class="c"><span id="adone">${cn.d}</span> / ${cn.t} series</span><div class="pbar"><i id="afill" style="width:${cn.t?cn.d/cn.t*100:0}%"></i></div></div></div>
+  ${r.ex.map((e,i)=>absCard(e,i,D)).join('')}
+  <button class="btn" id="absFinish">Terminar rutina</button>
+  <div class="row2" style="grid-template-columns:1fr 1fr"><button class="btn sm ghost" id="absDn">Más fácil</button><button class="btn sm ghost" id="absUp">Más difícil</button></div>
+  <div class="panel"><h3 style="margin-bottom:6px">Cómo usarla</h3>
+    <div class="tip"><b>Cada vez cambia sola</b><span>Alterna Rutina A y B, y cada 4 sesiones sube un nivel. Si te queda fácil o difícil, usa los botones de arriba.</span></div>
+    <div class="tip"><b>Cuándo hacerla</b><span>2 o 3 veces por semana, al final de Empuje o Tirón, o en tu día de descanso. No antes de piernas pesadas.</span></div>
+    <div class="tip"><b>Con discos (desde el Nivel 3)</b><span>Empieza con 5 kg (10 lb) y sostén el disco con ambas manos. Sube 2,5 kg cuando hagas las 3 series con buena técnica. Evita jalar el cuello.</span></div>
+    <div class="tip"><b>Descanso</b><span>45 s entre series; el cronómetro arranca al marcar una serie.</span></div></div>
+  ${h.length?`<div class="panel"><h3 style="margin-bottom:6px">Últimas sesiones</h3><table class="hist"><tbody>${h.map(x=>`<tr><td>${dm(x.date)}</td><td>Nivel ${x.lv} · Rutina ${x.r}</td><td>${x.sets} series</td></tr>`).join('')}</tbody></table></div>`:''}`;
+}
+function absSet(b){
+  const i=b.dataset.i,j=+b.dataset.j,a=S.absD.sets[i]=S.absD.sets[i]||[false,false,false];
+  a[j]=!a[j];b.classList.toggle('done',a[j]);if(a[j]){startRest(45);beep(660,.08)}save();updAbs();
+}
+function absFinish(){
+  const st=absState(),c=absCount(st.r);
+  if(!c.d){toast('Marca al menos una serie');return}
+  const w={};
+  st.r.ex.forEach((e,i)=>{if(e.w){const v=parseFloat(String(S.absD.w[i]||'').replace(',','.'));if(v>0){w[e.n]=v;S.abs.lastW[e.n]=v}}});
+  S.abs.log.push({date:today(),lv:st.lv+1,r:st.r.name,sets:c.d,w});S.absD=null;save();stopRest();
+  const nx=absState();
+  toast(nx.lv>st.lv?'¡Subes al Nivel '+(nx.lv+1)+'!':'Guardado. Próxima: Nivel '+(nx.lv+1)+' · Rutina '+nx.r.name,5000);
+  renderAbs();window.scrollTo(0,0);
+}
+function absShift(dir){
+  const A=S.abs,c=Math.max(0,A.log.length+A.adj);
+  if(dir>0)A.adj+=4-(c%4);else A.adj-=(c%4)||4;
+  A.adj=Math.max(A.adj,-A.log.length);save();renderAbs();
+}
+
 /* ---------- CONSEJOS ---------- */
 const TIPS=[
  ['Sube peso cuando cumplas todas las series','Si haces 4×8 completas con un peso, la próxima vez sube un escalón: 5 lb en las máquinas en libras, 2,5 kg en poleas y 5 kg en peso muerto. Si te faltan repeticiones, mantén el peso hasta completarlas. La app te marca “Sube a …” sola. Es lo que más resultados da.'],
@@ -451,13 +548,17 @@ function renderMas(){
 function show(t){
   tab=t;
   $$('#nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
-  ({hoy:renderHoy,prog:renderProg,tabata:renderTabata,mas:renderMas})[t]();
+  ({hoy:renderHoy,prog:renderProg,tabata:renderTabata,abs:renderAbs,mas:renderMas})[t]();
 }
 document.addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t)return;
   if(t.dataset.tab){show(t.dataset.tab);window.scrollTo(0,0);return}
   if(t.dataset.day){curDay=t.dataset.day;renderHoy();return}
   if(t.classList.contains('ck')){onCheck(t.closest('.set'));return}
+  if(t.classList.contains('sb')){absSet(t);return}
+  if(t.id==='absFinish'){absFinish();return}
+  if(t.id==='absUp'){absShift(1);return}
+  if(t.id==='absDn'){absShift(-1);return}
   if(t.id==='finish'){finish();return}
   if(t.id==='r15'){rest.end+=15000;restTick();return}
   if(t.id==='rx'){stopRest();return}
@@ -473,6 +574,7 @@ document.addEventListener('click',e=>{
     catch(err){toast('El respaldo no es válido')}return}
 });
 document.addEventListener('input',e=>{
+  if(e.target.classList.contains('awi')){S.absD.w[e.target.dataset.i]=e.target.value;save();return}
   const row=e.target.closest('.set');if(!row)return;
   const day=PLAN.find(p=>p.id===curDay),s=getDraft(day).logs[row.dataset.ex][+row.dataset.i];
   s.kg=$('.kg',row).value;s.reps=$('.reps',row).value;save();
