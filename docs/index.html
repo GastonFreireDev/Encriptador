@@ -256,7 +256,7 @@ const PLAN=[
 const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 
 /* ---------- Estado ---------- */
-const BUILD='2026-11-23 17:33 UTC';
+const BUILD='2026-11-23 17:34 UTC';
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
 S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}},dl:{on:false,start:null,cycle:null,snooze:null,base:{},back:{}}},S);
@@ -735,7 +735,7 @@ const ANIM={
  cu:mk('<rect x="92" y="88" width="42" height="5" rx="2"/><path d="M94 90L88 44" class="bk"/>',
   {x:112,y:84,t:352,th:94,sh:180,ua:175,fa:100},{x:112,y:84,t:352,th:94,sh:92,ua:175,fa:100},{}),
  is:mk('<rect x="46" y="94" width="134" height="6" rx="2"/><path d="M56 100V116M170 100V116"/>',
-  {x:122,y:90,t:270,th:90,sh:90,ua:270,fa:270,lf:0},{x:122,y:90,t:270,th:90,sh:12,ua:270,fa:270},{}),
+  {x:122,y:90,t:270,th:90,sh:90,ft:180,ua:270,fa:270},{x:122,y:90,t:270,th:90,sh:12,ft:102,ua:270,fa:270},{}),
  ge:mk('<rect x="86" y="110" width="52" height="6" rx="2"/>',
   {...STB,y:58,la:[110,110],lf:90,ua:180,fa:180},{...STB,y:50,la:[110,102],lf:140,ua:180,fa:180},{k:'db'}),
  pg:mk('<path d="M196 -14V116" class="bk"/>',
