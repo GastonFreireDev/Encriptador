@@ -243,7 +243,7 @@ const PLAN=[
   {id:'ea',n:'Espalda en máquina (abierto)',sets:4,reps:8,inc:5,u:'lb'},
   {id:'rm',n:'Remo en máquina',sets:4,reps:8,inc:5,u:'lb'},
   {id:'jf',n:'Jalón frontal',sets:4,reps:12,inc:2.5,note:'De pie, torso inclinado, brazos rectos'},
-  {id:'jc',n:'Jalón a la cara (polea)',sets:4,reps:12,inc:2.5,note:'Hombro posterior'},
+  {id:'jc',n:'Jalón a la cara (polea)',sets:4,reps:12,inc:2.5,note:'Codos altos y abiertos, manos a la cara'},
   {id:'bi',n:'Bíceps en polea',sets:4,reps:12,inc:2.5}]},
  {id:'legs',name:'Piernas',color:'var(--legs)',ex:[
   {id:'za',n:'Zancadas',sets:4,reps:8,inc:2.5,note:'Por cada pierna'},
@@ -256,7 +256,7 @@ const PLAN=[
 const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 
 /* ---------- Estado ---------- */
-const BUILD='2026-11-23 17:31 UTC';
+const BUILD='2026-11-23 17:33 UTC';
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
 S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}},dl:{on:false,start:null,cycle:null,snooze:null,base:{},back:{}}},S);
@@ -663,7 +663,7 @@ function figJ(P){
     if(aw)return ik2(S,aw,19,18,s||1);
     if(ur!=null){ua=t+ur;fa=t+fr}
     if(ua==null)return null;
-    const E=pa(S,vc(ua,19));return[E,pa(E,vc(fa,18))];
+    const E=pa(S,vc(ua,19*(P.ul!=null?P.ul:1)));return[E,pa(E,vc(fa,18))];
   };
   const leg=(la,th,sh,ft,lf,s)=>{
     if(la){const r=ik2(H,la,26,26,s||-1);return[r[0],r[1],pa(r[1],vc(lf!=null?lf:90,8))]}
@@ -725,7 +725,7 @@ const ANIM={
  jf:mk('<path d="M150 -14V116" class="bk"/>',
   {x:110,y:64,t:20,la:[106,114],ua:35,fa:35},{x:110,y:64,t:20,la:[106,114],ua:172,fa:172},{k:'bar',cb:[150,-12]}),
  jc:mk('<path d="M196 -14V116" class="bk"/>',
-  {...STB,ua:90,fa:90},{...STB,ua:243,fa:28},{k:'db',cb:[196,28]}),
+  {...STB,ua:90,fa:90},{...STB,ua:270,fa:72},{k:'db',cb:[196,28]}),
  bi:mk('<path d="M150 116h30" class="bk"/>',
   {...STB,ua:176,fa:176},{...STB,ua:176,fa:30},{k:'db',cb:[160,114]}),
  za:mk('',
@@ -771,6 +771,8 @@ const ANIM={
  twistUp:mk('',{x:120,y:100,t:325,th:60,sh:120,aw:[140,76],as:1},{x:120,y:100,t:325,th:60,sh:120,aw:[106,88],as:1},{k:'plate'}),
  chop:mk('',{x:104,y:62,t:-12,la:[108,114],aw:[92,0],as:1},{x:110,y:70,t:42,la:[118,114],aw:[140,92],as:1},{k:'plate'}),
 };
+/* jalón a la cara: los codos se abren a los lados a la altura de los hombros (de perfil se acortan) */
+ANIM.jc.f=(P,u)=>{P.ul=1-.45*u-.5*Math.sin(Math.PI*u);return P};
 /* nombre del ejercicio de abdomen -> dibujo */
 const ABK={'Crunch':'crunch','Crunch con piernas elevadas':'crunchL','Crunch con pausa':'crunch','Sit-up':'situp','Crunch con disco al pecho':'crunchP','Sit-up con disco al pecho':'situpP','Crunch con disco sobre la cabeza':'crunchH','Sit-up con disco sobre la cabeza':'situpH','Crunch con disco y pausa de 3 s':'crunchP','Sit-up con disco, bajada de 5 s':'situpP','Plancha de rodillas':'kplank','Bicho muerto':'deadbug','Plancha':'plank','Bicho muerto con pausa':'deadbug','Plancha con toque de hombro':'plankTap','Hollow hold':'hollow','Plancha con elevación de pierna':'plankLeg','Hollow hold con piernas bajas':'hollowLow','Arrastre de disco en plancha':'plankDrag','Hollow hold con disco':'hollowP','Elevación de rodillas tumbado':'kneeRaise','Crunch inverso':'revCrunch','Elevación de piernas':'legRaise','Tijeras':'scissors','Elevación de piernas con pausa':'legRaise','Crunch inverso con pausa':'revCrunch','Elevación de piernas con bajada lenta':'legRaise','Elevación de cadera con piernas rectas':'hipRaise','Elevación de piernas, pausa y bajada lenta':'legRaise','Elevación de cadera con pausa':'hipRaise','Bicicleta':'bike','Plancha lateral de rodillas':'sideK','Bicicleta lenta':'bike','Plancha lateral':'side','Giro ruso':'twist','Plancha lateral con pierna arriba':'sideLeg','Giro ruso con disco':'twist','Leñador con disco':'chop','Giro ruso con disco, pies arriba':'twistUp','Leñador con disco, pesado':'chop'};
 function howHtml(k){return ANIM[k]?`<details class="how" data-k="${k}"><summary>Cómo se hace</summary><div class="fig"></div></details>`:''}
@@ -778,7 +780,7 @@ const FIG=new Map();let figRaf=null;
 function figFrame(m,ts){
   const T=2800,x=((ts%T)/T),ph=x<.5?x*2:(1-x)*2,hold=.14;
   let u=ph<hold?0:ph>1-hold?1:(ph-hold)/(1-2*hold);u=(1-Math.cos(Math.PI*u))/2;
-  return figSvg(m,mixP(m.A,m.B,u));
+  let P=mixP(m.A,m.B,u);if(m.f)P=m.f(P,u);return figSvg(m,P);
 }
 function figLoop(ts){
   for(const [el,o] of FIG){if(!el.isConnected){FIG.delete(el);continue}el.innerHTML='<svg viewBox="0 -14 220 136" role="img" aria-label="Animación del ejercicio">'+figFrame(o.m,ts-o.t0)+'</svg>'}
