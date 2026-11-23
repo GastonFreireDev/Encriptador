@@ -224,7 +224,7 @@ const PLAN=[
  {id:'pull',name:'Tirón',color:'var(--pull)',ex:[
   {id:'ea',n:'Espalda en máquina (abierto)',sets:4,reps:8,inc:5,u:'lb'},
   {id:'rm',n:'Remo en máquina',sets:4,reps:8,inc:5,u:'lb'},
-  {id:'jf',n:'Jalón frontal',sets:4,reps:12,inc:2.5},
+  {id:'jf',n:'Jalón frontal',sets:4,reps:12,inc:2.5,note:'De pie, torso inclinado, brazos rectos'},
   {id:'jc',n:'Jalón a la cara (polea)',sets:4,reps:12,inc:2.5,note:'Hombro posterior'},
   {id:'bi',n:'Bíceps en polea',sets:4,reps:12,inc:2.5}]},
  {id:'legs',name:'Piernas',color:'var(--legs)',ex:[
@@ -704,8 +704,8 @@ const ANIM={
   {x:122,y:84,t:352,la:[148,114],aw:[122,18],as:1},{x:122,y:84,t:352,la:[148,114],aw:[130,58],as:1},{k:'db',cb:[134,-12]}),
  rm:mk('<rect x="98" y="90" width="38" height="5" rx="2"/><rect x="150" y="48" width="8" height="34" rx="3"/><path d="M158 116h26" class="bk"/>',
   {x:120,y:84,t:0,la:[150,114],ua:90,fa:90},{x:120,y:84,t:-5,la:[150,114],ua:250,fa:92},{k:'db',cb:[200,56]}),
- jf:mk('<rect x="100" y="90" width="38" height="5" rx="2"/><path d="M150 -14V116" class="bk"/>',
-  {x:120,y:84,t:350,la:[148,114],ua:4,fa:4},{x:120,y:84,t:350,la:[148,114],ua:195,fa:60},{k:'bar',cb:[150,-10]}),
+ jf:mk('<path d="M150 -14V116" class="bk"/>',
+  {x:110,y:64,t:20,la:[106,114],ua:35,fa:35},{x:110,y:64,t:20,la:[106,114],ua:172,fa:172},{k:'bar',cb:[150,-12]}),
  jc:mk('<path d="M196 -14V116" class="bk"/>',
   {...STB,ua:90,fa:90},{...STB,ua:243,fa:28},{k:'db',cb:[196,28]}),
  bi:mk('<path d="M150 116h30" class="bk"/>',
