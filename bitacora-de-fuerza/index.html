@@ -797,7 +797,8 @@ function renderMas(){
     <div class="note" style="margin-bottom:10px">Tus registros viven solo en este teléfono y navegador. Copia el respaldo de vez en cuando; para pasarlo a otro dispositivo pégalo abajo y restaura.</div>
     <textarea id="bk" rows="4" placeholder="Pega aquí un respaldo para restaurar" aria-label="Respaldo"></textarea>
     <div class="row2" style="grid-template-columns:1fr 1fr"><button class="btn sm ghost" id="bkCopy">Copiar respaldo</button><button class="btn sm" id="bkRestore">Restaurar</button></div></div>
-  <div class="note" style="text-align:center;margin-top:16px">Versión ${BUILD}</div>`;
+  <div class="note" style="text-align:center;margin-top:16px">Versión ${BUILD}</div>
+  <button class="btn sm ghost" id="upd" style="margin-top:8px">Buscar actualización</button>`;
 }
 
 /* ---------- Navegación y eventos ---------- */
@@ -819,6 +820,9 @@ document.addEventListener('click',e=>{
   if(t.id==='absDn'){const st=absState();absGo(st.lv+1-5);return}
   if(t.id==='lvGo'){const n=parseInt($('#lvIn').value);if(n>=1&&n<=100)absGo(n);else toast('Escribe un nivel de 1 a 100');return}
   if(t.id==='hx'){stopHold();return}
+  if(t.id==='upd'){toast('Actualizando…');const done=()=>location.reload();
+    (navigator.serviceWorker?navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))):Promise.resolve())
+      .then(()=>window.caches?caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))):0).then(done,done);return}
   if(t.id==='finish'){finish();return}
   if(t.id==='warmGo'){warmStart();return}
   if(t.id==='warmOk'){const dr=getDraft(PLAN.find(p=>p.id===curDay));dr.warm=!dr.warm;save();renderHoy();return}
