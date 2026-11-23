@@ -256,7 +256,7 @@ const PLAN=[
 const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 
 /* ---------- Estado ---------- */
-const BUILD='2026-11-23 17:35 UTC';
+const BUILD='2026-11-23 17:38 UTC';
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
 S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}},dl:{on:false,start:null,cycle:null,snooze:null,base:{},back:{}}},S);
@@ -657,7 +657,9 @@ function ik2(a,t,l1,l2,s){
   return[[a[0]+Math.cos(an)*l1,a[1]+Math.sin(an)*l1],t];
 }
 function figJ(P){
-  const H=[P.x,P.y],t=P.t,N=pa(H,vc(t,34)),S=pa(H,vc(t,31)),Hd=pa(N,vc(t+(P.hd||0),10));
+  const H=[P.x,P.y],t=P.t;let M=null,N,S;
+  if(P.tm!=null){M=pa(H,vc(P.tm,17));N=pa(M,vc(t,17));S=pa(M,vc(t,14))}else{N=pa(H,vc(t,34));S=pa(H,vc(t,31))}
+  const Hd=pa(N,vc(t+(P.hd||0),10));
   const arm=(aw,awr,ua,fa,ur,fr,s)=>{
     if(awr)aw=pa(pa(S,vc(t,awr[0])),vc(t+90,awr[1]));
     if(aw)return ik2(S,aw,19,18,s||1);
@@ -670,7 +672,7 @@ function figJ(P){
     if(th==null)return null;
     const K=pa(H,vc(th,26)),A=pa(K,vc(sh,26));return[K,A,pa(A,vc(ft!=null?ft:sh-90,8))];
   };
-  return{H,N,S,Hd,
+  return{H,M,N,S,Hd,
     a1:arm(P.aw,P.awr,P.ua,P.fa,P.ur,P.fr,P.as),
     a2:arm(P.aw2,P.awr2,P.ua2,P.fa2,null,null,P.as),
     l1:leg(P.la,P.th,P.sh,P.ft,P.lf,P.ls),
@@ -684,7 +686,7 @@ function figSvg(m,P){
   if(J.a2)far+=limb(1,[J.S,J.a2[0],J.a2[1]],'fl');
   if(J.l2)far+=limb(1,[J.H,J.l2[0],J.l2[1],J.l2[2]],'fl');
   if(J.l1)near+=limb(1,[J.H,J.l1[0],J.l1[1],J.l1[2]],'nl');
-  near+=limb(1,[J.H,J.N],'nl');
+  near+=limb(1,J.M?[J.H,J.M,J.N]:[J.H,J.N],'nl');
   if(J.a1)near+=limb(1,[J.S,J.a1[0],J.a1[1]],'nl');
   near+=`<circle class="hd" cx="${f1(J.Hd[0])}" cy="${f1(J.Hd[1])}" r="7"/>`;
   const w=e.at==='w2'?(J.a2&&J.a2[1]):(J.a1&&J.a1[1]);
@@ -709,7 +711,7 @@ const STB={x:110,y:62,t:0,la:[110,114]};               /* de pie */
 const mk=(p,A,B,e)=>({p,A,B,e});
 const ANIM={
  pp:mk('<rect x="52" y="92" width="112" height="6" rx="2"/><path d="M62 98V116M154 98V116"/>',
-  {x:135,y:84,t:270,la:[158,114],ua:160,fa:5},{x:135,y:84,t:270,la:[158,114],ua:0,fa:0},{k:'bar'}),
+  {x:135,y:84,t:270,la:[158,114],ua:115,ul:.55,fa:0},{x:135,y:84,t:270,la:[158,114],ua:0,ul:1,fa:0},{k:'bar'}),
  pm:mk('<rect x="80" y="86" width="60" height="5" rx="2"/>',
   {...STB,x:112,y:84,t:0,la:[140,114],ua:165,fa:15},{...STB,x:112,y:84,t:0,la:[140,114],ua:0,fa:0},{k:'db'}),
  pi:mk('<path d="M130 92L94 52" class="bk"/><rect x="116" y="92" width="30" height="5" rx="2"/><path d="M122 97V116M142 97V116"/>',
@@ -742,31 +744,31 @@ const ANIM={
   {x:100,y:62,t:35,aw:[162,50],th:165,sh:192,th2:180,sh2:180},{x:100,y:62,t:35,aw:[162,50],th:228,sh:232,th2:180,sh2:180},{cb:[196,112],from:'a'}),
 
  /* ----- abdomen ----- */
- crunch:mk('',{...LYB,ur:60,fr:-70,hd:0},{...LYB,t:312,ur:60,fr:-70,hd:12},{}),
- crunchL:mk('',{...LYB,la:null,th:0,sh:90,ur:60,fr:-70,hd:0},{...LYB,la:null,th:0,sh:90,t:312,ur:60,fr:-70,hd:12},{}),
- crunchP:mk('',{...LYB,awr:[-8,10],as:-1,hd:0},{...LYB,t:312,awr:[-8,10],as:-1,hd:12},{k:'plate'}),
- crunchH:mk('',{...LYB,awr:[34,10],as:-1,hd:0},{...LYB,t:312,awr:[34,10],as:-1,hd:12},{k:'plate'}),
- situp:mk('',{...LYB,ur:60,fr:-70,hd:0},{...LYB,t:372,ur:60,fr:-70,hd:-10},{}),
- situpP:mk('',{...LYB,awr:[-8,10],as:-1,hd:0},{...LYB,t:372,awr:[-8,10],as:-1,hd:-10},{k:'plate'}),
- situpH:mk('',{...LYB,awr:[34,10],as:-1,hd:0},{...LYB,t:372,awr:[34,10],as:-1,hd:-10},{k:'plate'}),
- kplank:mk('',{x:100,y:90,t:78,th:200,sh:290,ua:180,fa:180,ft:150},{x:100,y:91,t:77,th:200,sh:290,ua:180,fa:180,ft:150},{}),
- plank:mk('',{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180},{x:100,y:87,t:69,la:[55,113],lf:150,ua:180,fa:180},{}),
- plankTap:mk('',{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180,aw2:[130,113]},{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180,aw2:[122,66]},{}),
- plankLeg:mk('',{x:100,y:86,t:70,la:[55,113],la2:[57,113],lf:150,ua:180,fa:180},{x:100,y:86,t:70,la:[55,113],la2:[49,78],lf:150,ua:180,fa:180},{}),
- plankDrag:mk('',{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180,aw2:[158,110]},{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180,aw2:[120,110]},{k:'plate',at:'w2'}),
+ crunch:mk('',{...LYB,tm:270,ur:60,fr:-70,hd:0},{...LYB,tm:270,t:305,ur:60,fr:-70,hd:14},{}),
+ crunchL:mk('',{...LYB,la:null,th:0,sh:90,tm:270,ur:60,fr:-70,hd:0},{...LYB,la:null,th:0,sh:90,tm:270,t:305,ur:60,fr:-70,hd:14},{}),
+ crunchP:mk('',{...LYB,tm:270,awr:[-8,10],as:-1,hd:0},{...LYB,tm:270,t:305,awr:[-8,10],as:-1,hd:14},{k:'plate'}),
+ crunchH:mk('',{...LYB,tm:270,awr:[34,10],as:-1,hd:0},{...LYB,tm:270,t:305,awr:[34,10],as:-1,hd:14},{k:'plate'}),
+ situp:mk('',{...LYB,tm:270,ur:60,fr:-70,hd:0},{...LYB,tm:335,t:372,ur:60,fr:-70,hd:-10},{}),
+ situpP:mk('',{...LYB,tm:270,awr:[-8,10],as:-1,hd:0},{...LYB,tm:335,t:372,awr:[-8,10],as:-1,hd:-10},{k:'plate'}),
+ situpH:mk('',{...LYB,tm:270,awr:[34,10],as:-1,hd:0},{...LYB,tm:335,t:372,awr:[34,10],as:-1,hd:-10},{k:'plate'}),
+ kplank:mk('',{x:102.4,y:95.9,t:53,th:232,sh:290,ft:150,ua:180,fa:180},{x:102.4,y:96.9,t:53,th:232,sh:290,ft:150,ua:180,fa:180},{}),
+ plank:mk('',{x:101,y:89,t:65,la:[54,112],lf:150,ua:180,fa:180},{x:101,y:90,t:65,la:[54,112],lf:150,ua:180,fa:180},{}),
+ plankTap:mk('',{x:101,y:89,t:65,la:[54,112],lf:150,ua:180,fa:180,aw2:[129,112]},{x:101,y:89,t:65,la:[54,112],lf:150,ua:180,fa:180,aw2:[123,78]},{}),
+ plankLeg:mk('',{x:101,y:89,t:65,la:[54,112],la2:[56,112],lf:150,ua:180,fa:180},{x:101,y:89,t:65,la:[54,112],la2:[50,80],lf:150,ua:180,fa:180},{}),
+ plankDrag:mk('',{x:101,y:89,t:65,la:[54,112],lf:150,ua:180,fa:180,aw2:[162,106]},{x:101,y:89,t:65,la:[54,112],lf:150,ua:180,fa:180,aw2:[126,106]},{k:'plate',at:'w2'}),
  deadbug:mk('',{...LYB,la:null,th:0,sh:90,th2:0,sh2:90,ua:0,fa:0,ua2:0,fa2:0},{...LYB,la:null,th:92,sh:92,th2:0,sh2:90,ua:0,fa:0,ua2:-80,fa2:-80},{}),
  hollow:mk('',{x:128,y:109,t:300,hd:-8,th:80,sh:80,ft:90,awr:[36,0]},{x:128,y:109,t:296,hd:-8,th:82,sh:82,ft:90,awr:[36,0]},{}),
  hollowLow:mk('',{x:128,y:109,t:300,hd:-8,th:88,sh:88,ft:90,awr:[36,0]},{x:128,y:109,t:296,hd:-8,th:90,sh:90,ft:90,awr:[36,0]},{}),
  hollowP:mk('',{x:128,y:109,t:300,hd:-8,th:80,sh:80,ft:90,awr:[36,0]},{x:128,y:109,t:296,hd:-8,th:82,sh:82,ft:90,awr:[36,0]},{k:'plate'}),
  kneeRaise:mk('',{...LYB,la:null,th:40,sh:170,ua:90,fa:90},{...LYB,la:null,th:-10,sh:80,ua:90,fa:90},{}),
- revCrunch:mk('',{...LYB,la:null,th:0,sh:90,ua:90,fa:90},{...LYB,y:100,la:null,th:-8,sh:40,ua:90,fa:90},{}),
- hipRaise:mk('',{...LYB,la:null,th:0,sh:0,ua:90,fa:90},{...LYB,y:100,la:null,th:-2,sh:-2,ua:90,fa:90},{}),
+ revCrunch:mk('',{...LYB,la:null,th:0,sh:90,ua:90,fa:90},{x:126.8,y:100.2,t:255,la:null,th:-25,sh:65,ua:90,fa:90},{}),
+ hipRaise:mk('',{...LYB,la:null,th:0,sh:0,ua:90,fa:90},{x:125.8,y:96.9,t:249.3,la:null,th:-8,sh:-8,ua:90,fa:90},{}),
  legRaise:mk('',{...LYB,la:null,th:92,sh:92,ua:90,fa:90},{...LYB,la:null,th:4,sh:4,ua:90,fa:90},{}),
  scissors:mk('',{...LYB,t:286,la:null,th:62,sh:62,th2:92,sh2:92,ur:60,fr:-70,hd:8},{...LYB,t:286,la:null,th:92,sh:92,th2:62,sh2:62,ur:60,fr:-70,hd:8},{}),
  bike:mk('',{...LYB,t:300,la:null,th:-15,sh:70,th2:80,sh2:80,ur:60,fr:-70,hd:8},{...LYB,t:300,la:null,th:80,sh:80,th2:-15,sh2:70,ur:60,fr:-70,hd:8},{}),
- sideK:mk('',{x:104,y:92,t:71,th:192,sh:270,aw:[148,112],as:1,ft:180},{x:104,y:93,t:70,th:192,sh:270,aw:[148,112],as:1,ft:180},{}),
- side:mk('',{x:100,y:96,t:71,la:[52,113],aw:[148,112],as:1,lf:180},{x:100,y:97,t:70,la:[52,113],aw:[148,112],as:1,lf:180},{}),
- sideLeg:mk('',{x:100,y:96,t:71,la:[52,113],la2:[54,113],aw:[148,112],as:1,lf:180},{x:100,y:96,t:71,la:[52,113],la2:[60,66],aw:[148,112],as:1,lf:180},{}),
+ sideK:mk('',{x:100,y:97.5,t:81.4,th:232,sh:270,ft:180,ua:180,fa:90},{x:100,y:98.5,t:81.4,th:232,sh:270,ft:180,ua:180,fa:90},{}),
+ side:mk('',{x:99.9,y:100.3,t:76.3,la:[49.4,112.6],lf:180,ua:180,fa:90},{x:99.9,y:101.3,t:76.3,la:[49.4,112.6],lf:180,ua:180,fa:90},{}),
+ sideLeg:mk('',{x:99.9,y:100.3,t:76.3,la:[49.4,112.6],la2:[52,111],lf:180,ua:180,fa:90},{x:99.9,y:100.3,t:76.3,la:[49.4,112.6],la2:[60,72],lf:180,ua:180,fa:90},{}),
  twist:mk('',{x:120,y:100,t:325,la:[156,114],aw:[140,76],as:1},{x:120,y:100,t:325,la:[156,114],aw:[106,88],as:1},{k:'plate'}),
  twistUp:mk('',{x:120,y:100,t:325,th:60,sh:120,aw:[140,76],as:1},{x:120,y:100,t:325,th:60,sh:120,aw:[106,88],as:1},{k:'plate'}),
  chop:mk('',{x:104,y:62,t:-12,la:[108,114],aw:[92,0],as:1},{x:110,y:70,t:42,la:[118,114],aw:[140,92],as:1},{k:'plate'}),
