@@ -256,7 +256,7 @@ const PLAN=[
 const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 
 /* ---------- Estado ---------- */
-const BUILD='2026-11-23 17:34 UTC';
+const BUILD='2026-11-23 17:35 UTC';
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
 S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}},dl:{on:false,start:null,cycle:null,snooze:null,base:{},back:{}}},S);
@@ -754,7 +754,7 @@ const ANIM={
  plankTap:mk('',{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180,aw2:[130,113]},{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180,aw2:[122,66]},{}),
  plankLeg:mk('',{x:100,y:86,t:70,la:[55,113],la2:[57,113],lf:150,ua:180,fa:180},{x:100,y:86,t:70,la:[55,113],la2:[49,78],lf:150,ua:180,fa:180},{}),
  plankDrag:mk('',{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180,aw2:[158,110]},{x:100,y:86,t:70,la:[55,113],lf:150,ua:180,fa:180,aw2:[120,110]},{k:'plate',at:'w2'}),
- deadbug:mk('',{...LYB,la:null,th:0,sh:90,th2:0,sh2:90,ua:0,fa:0,ua2:0,fa2:0},{...LYB,la:null,th:0,sh:90,th2:92,sh2:92,ua:0,fa:0,ua2:-80,fa2:-80},{}),
+ deadbug:mk('',{...LYB,la:null,th:0,sh:90,th2:0,sh2:90,ua:0,fa:0,ua2:0,fa2:0},{...LYB,la:null,th:92,sh:92,th2:0,sh2:90,ua:0,fa:0,ua2:-80,fa2:-80},{}),
  hollow:mk('',{x:128,y:109,t:300,hd:-8,th:80,sh:80,ft:90,awr:[36,0]},{x:128,y:109,t:296,hd:-8,th:82,sh:82,ft:90,awr:[36,0]},{}),
  hollowLow:mk('',{x:128,y:109,t:300,hd:-8,th:88,sh:88,ft:90,awr:[36,0]},{x:128,y:109,t:296,hd:-8,th:90,sh:90,ft:90,awr:[36,0]},{}),
  hollowP:mk('',{x:128,y:109,t:300,hd:-8,th:80,sh:80,ft:90,awr:[36,0]},{x:128,y:109,t:296,hd:-8,th:82,sh:82,ft:90,awr:[36,0]},{k:'plate'}),
