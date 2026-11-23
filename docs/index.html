@@ -246,7 +246,7 @@ const PLAN=[
   {id:'jc',n:'Jalón a la cara (polea)',sets:4,reps:12,inc:2.5,note:'Codos altos y abiertos, manos a la cara'},
   {id:'bi',n:'Bíceps en polea',sets:4,reps:12,inc:2.5}]},
  {id:'legs',name:'Piernas',color:'var(--legs)',ex:[
-  {id:'za',n:'Zancadas',sets:4,reps:8,inc:2.5,note:'Por cada pierna'},
+  {id:'za',n:'Zancadas',sets:4,reps:8,inc:2.5,note:'Paso al frente, baja y vuelve; cada pierna'},
   {id:'pd',n:'Peso muerto',sets:4,reps:8,inc:5},
   {id:'cu',n:'Cuádriceps en máquina',sets:4,reps:12,inc:5,u:'lb',note:'A una pierna'},
   {id:'is',n:'Isquios acostado',sets:4,reps:12,inc:5,u:'lb'},
@@ -729,7 +729,7 @@ const ANIM={
  bi:mk('<path d="M150 116h30" class="bk"/>',
   {...STB,ua:176,fa:176},{...STB,ua:176,fa:30},{k:'db',cb:[160,114]}),
  za:mk('',
-  {...STB,ua:180,fa:180,th2:180,sh2:180},{x:104,y:86,t:0,th:96,sh:180,ua:180,fa:180,th2:190,sh2:266,ft2:176},{k:'db'}),
+  {x:100,y:62,t:0,la:[100,114],la2:[100,114],ua:180,fa:180},{x:112,y:86,t:0,la:[140,114],la2:[88,112],ua:180,fa:180},{k:'db'}),
  pd:mk('<line class="bk" x1="80" y1="116" x2="150" y2="116"/>',
   {x:98,y:70,t:58,la:[108,114],ua:180,fa:180},{x:110,y:62,t:0,la:[110,114],ua:180,fa:180},{k:'bar'}),
  cu:mk('<rect x="92" y="88" width="42" height="5" rx="2"/><path d="M94 90L88 44" class="bk"/>',
