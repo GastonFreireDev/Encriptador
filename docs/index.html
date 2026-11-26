@@ -256,7 +256,7 @@ const PLAN=[
 const EX={}; PLAN.forEach(d=>d.ex.forEach(e=>{EX[e.id]={...e,day:d}}));
 
 /* ---------- Estado ---------- */
-const BUILD='2026-11-23 17:58 UTC';
+const BUILD='2026-11-26 17:39 UTC';
 const KEY='bitacora-fuerza-v1';
 let S={}; try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
 S=Object.assign({sessions:[],drafts:{},rest:90,tabata:{work:20,rest:10,rounds:8},pex:'pp',theme:'auto',abs:{log:[],adj:0,lastW:{}},dl:{on:false,start:null,cycle:null,snooze:null,base:{},back:{}}},S);
@@ -546,7 +546,7 @@ function absCard(e,i,D,sets){
     ${e.w?`<div class="aw"><label class="f"><input class="awi" data-i="${i}" inputmode="decimal" placeholder="${lw?fmt(lw):fmt(e.wk)}" value="${D.w[i]||''}" aria-label="Peso del disco"><i>kg</i></label><span class="note">Disco · sugerido ${fmt(e.wk)} kg${lw?' · última vez '+fmt(lw)+' kg':''}</span></div>`:''}
     ${howHtml(ABK[e.n])}
     <div class="sbs" style="grid-template-columns:repeat(${sets},1fr)">${Array.from({length:sets},(_,j)=>`<button class="sb${done[j]?' done':''}" data-i="${i}" data-j="${j}">${e.k==='t'?'▶ ':''}Serie ${j+1}</button>`).join('')}</div>
-    ${e.k==='t'?'<div class="note" style="margin-top:6px">Toca ▶ para iniciar el cronómetro'+(e.per==='por lado'?' (cambia de lado cuando suene)':'')+'.</div>':''}</section>`;
+    ${e.k==='t'?'<div class="note" style="margin-top:6px">Toca ▶ para iniciar el cronómetro'+(e.per==='por lado'?' (5 s para cambiar de lado)':'')+'.</div>':''}</section>`;
 }
 function renderAbs(){
   const st=absState(),{c,lv,sets}=st;
@@ -563,7 +563,7 @@ function renderAbs(){
     <div class="tip"><b>Un nivel por sesión</b><span>Cada rutina que terminas sube un nivel, hasta el 100. Alterna A y B, y cada nivel suma repeticiones o segundos. Cada 20 niveles cambias de etapa con ejercicios más difíciles.</span></div>
     <div class="tip"><b>Cuándo hacerla</b><span>2 o 3 veces por semana, al final de Empuje o Tirón, o en tu día de descanso. No antes de piernas pesadas.</span></div>
     <div class="tip"><b>Con discos (desde el nivel 41)</b><span>Sostén el disco con ambas manos. Empieza con lo sugerido y sube 2,5 kg cuando hagas todas las series con buena técnica. Evita jalar el cuello.</span></div>
-    <div class="tip"><b>Ejercicios con tiempo</b><span>Toca ▶: tienes 5 s para ponerte en posición y luego corre el cronómetro. Al terminar se marca la serie y empieza el descanso de 45 s.</span></div></div>
+    <div class="tip"><b>Ejercicios con tiempo</b><span>Toca ▶: tienes 5 s para ponerte en posición y luego corre el cronómetro. En los ejercicios por lado hay otros 5 s para cambiar de lado. Al terminar se marca la serie y empieza el descanso de 45 s.</span></div></div>
   ${h.length?`<div class="panel"><h3 style="margin-bottom:6px">Últimas sesiones</h3><table class="hist"><tbody>${h.map(x=>`<tr><td>${dm(x.date)}</td><td>Nivel ${x.lv} · Rutina ${x.r}</td><td>${x.sets} series</td></tr>`).join('')}</tbody></table></div>`:''}`;
 }
 function absSet(b){
@@ -578,7 +578,7 @@ function stopHold(){clearInterval(HD.t);HD.t=null;$('#holdbox').hidden=true;try{
 function wake(){try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>HD.wl=l).catch(()=>{})}catch(e){}}
 function holdStart(i,j){
   const e=absPlan(S.absD.key).ex[i],side=e.per==='por lado',ph=[{n:'Prepárate',d:5,k:'prep'},{n:side?'Lado 1':'Aguanta',d:e.val,k:'work'}];
-  if(side)ph.push({n:'Lado 2',d:e.val,k:'work'});
+  if(side){ph.push({n:'Cambia de lado',d:5,k:'prep'});ph.push({n:'Lado 2',d:e.val,k:'work'})}
   stopRest();stopHold();Object.assign(HD,{mode:'abs',ph,i:0,end:Date.now()+5000,sec:-1,key:S.absD.key,idx:i,j,name:e.n});
   $('#holdbox').hidden=false;HD.t=setInterval(holdTick,100);beep(600,.08);holdPaint();wake();
 }
